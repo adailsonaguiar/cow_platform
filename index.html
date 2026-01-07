@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Dexx Plugin</title>
+    
+    <!-- Simulação do Google Tag Manager -->
+    <script>
+        (function(w,d,s,l,i){
+            console.log('🏷️ GTM Simulado: Inicializando...');
+            w[l]=w[l]||[];
+            w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});
+            
+            // Simula carregamento de tags e anúncios
+            setTimeout(function() {
+                console.log('🏷️ GTM Simulado: Tags carregadas');
+                console.log('📊 GTM Simulado: Anúncios ativados');
+                
+                // Dispara evento de anúncios carregados
+                var event = new CustomEvent('gtmAdsLoaded', {
+                    detail: { adsCount: 3, timestamp: new Date() }
+                });
+                window.dispatchEvent(event);
+            }, 500);
+        })(window,document,'script','dataLayer','GTM-XXXX');
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        .intro {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .code-section {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .code-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .button-container {
+            margin-top: 30px;
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d0d0d0;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .info-box p {
+            color: #0d47a1;
+            margin: 0;
+        }
+
+        .response-log {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            min-height: 60px;
+        }
+
+        .response-log h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .response-log p {
+            color: #666;
+            font-family: monospace;
+        }
+
+        /* Estilos para Anúncios Simulados */
+        .ad-banner {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ad-banner::before {
+            content: '📢 ANÚNCIO';
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            font-size: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+
+        .ad-banner.top {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        .ad-banner.sidebar {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 30px 15px;
+        }
+
+        .ad-banner.bottom {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .ad-content {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .ad-cta {
+            display: inline-block;
+            background: white;
+            color: #333;
+            padding: 8px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            margin-top: 10px;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+
+        .ad-cta:hover {
+            transform: scale(1.05);
+        }
+
+        .sidebar-ad-container {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 200px;
+            z-index: 1000;
+        }
+
+        @media (max-width: 1200px) {
+            .sidebar-ad-container {
+                display: none;
+            }
+        }
+
+        .gtm-status {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #333;
+            color: #4CAF50;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .gtm-status::before {
+            content: '🟢 ';
+        }
+    </style>
+</head>
+<body>
+    <!-- Anúncio lateral fixo -->
+    <div class="sidebar-ad-container">
+        
+    </div>
+
+    <div class="container">
+        <h1>🚀 Dexx Plugin - Demonstração</h1>
+        
+        <div class="intro">
+            <p>Este é um exemplo de site hospedeiro que está usando o Dexx Plugin. O modal aparecerá automaticamente após 1 segundo do carregamento da página.</p>
+        </div>
+
+        <div class="info-box">
+            <p><strong>💡 Dica:</strong> O modal pode ser fechado clicando no X, nos botões, fora do modal ou pressionando ESC.</p>
+        </div>
+
+        <div class="code-section">
+            <h3>📦 Como usar no seu site:</h3>
+            <pre>&lt;!-- Cole este código antes do fechamento do &lt;/body&gt; --&gt;
+&lt;script src="plugin.js"&gt;&lt;/script&gt;</pre>
+        </div>
+
+        <div class="code-section">
+            <h3>🎯 Capturar a resposta do usuário:</h3>
+            <pre>window.addEventListener('dexxPluginResponse', function(event) {
+    console.log('Usuário respondeu:', event.detail.response);
+    // Faça algo com a resposta (sim ou não)
+});</pre>
+        </div>
+
+        <div class="button-container">
+            <button class="btn-primary" onclick="reopen()">Abrir Modal Novamente</button>
+            <button class="btn-secondary" onclick="clearLog()">Limpar Log</button>
+        </div>
+
+        <div class="response-log">
+            <h4>📋 Log de Respostas:</h4>
+            <p id="log">Aguardando resposta do usuário...</p>
+        </div>
+
+        <!-- Banner de anúncio inferior -->
+        <div class="ad-banner bottom">
+            <div class="ad-content">
+                💎 Programa de Fidelidade - Cadastre-se Grátis
+            </div>
+            <p style="font-size: 14px; margin: 0;">Ganhe pontos em cada compra e troque por prêmios</p>
+            <a href="#" class="ad-cta" onclick="return false;">Cadastrar Agora</a>
+        </div>
+    </div>
+
+    <!-- Ad Injector - Simula sistema de injeção de anúncios -->
+    <script src="ad-injector.js"></script>
+    
+    <!-- Plugin Script -->
+    <script src="plugin.js"></script>
+
+    <!-- Script para capturar respostas -->
+    <script>
+        const logElement = document.getElementById('log');
+        
+        // Listener para evento GTM
+        window.addEventListener('gtmAdsLoaded', function(event) {
+            console.log('📊 Anúncios carregados via GTM:', event.detail);
+        });
+
+        // Listener para Ad Injector pronto
+        window.addEventListener('adInjectorReady', function(event) {
+            console.log('🎯 Ad Injector pronto:', event.detail);
+        });
+        
+        window.addEventListener('dexxPluginResponse', function(event) {
+            const timestamp = new Date().toLocaleTimeString();
+            const response = event.detail.response;
+            logElement.innerHTML += `<br>[${timestamp}] Usuário respondeu: <strong>${response}</strong>`;
+            
+            // Simula envio de evento para GTM
+            console.log('📊 GTM Event: user_response', { response: response });
+        });
+
+        function reopen() {
+            if (window.DexxPlugin) {
+                window.DexxPlugin.openModal();
+            }
+        }
+
+        function clearLog() {
+            logElement.innerHTML = 'Log limpo. Aguardando nova resposta...';
+        }
+
+        // Simula tracking de cliques em anúncios
+        document.querySelectorAll('.ad-cta').forEach(function(ad) {
+            ad.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('📊 GTM Event: ad_click', { 
+                    adType: this.closest('.ad-banner').classList.contains('top') ? 'banner_top' : 
+                            this.closest('.ad-banner').classList.contains('sidebar') ? 'sidebar' : 'banner_bottom'
+                });
+                alert('📊 Clique no anúncio registrado no GTM!');
+            });
+        });
+    </script>
+</body>
+</html>
