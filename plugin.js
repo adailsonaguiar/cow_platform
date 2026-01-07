@@ -13,6 +13,14 @@
     modalElement: null,
     currentStep: 1, // Controla qual pergunta está sendo exibida
     answers: {}, // Armazena as respostas
+    
+    // Sistema de watchers para anúncios
+    offerwallSeen: false,
+    pollId: null,
+    mutationObserver: null,
+    pollTimeout: null,
+    fallbackTimer: null,
+    closedOnce: false,
 
     // Perguntas do questionário
     questions: [
@@ -253,6 +261,17 @@
       .dexx-modal-answers-summary strong {
         color: #333;
       }
+
+      .dexx-modal-options {
+        text-align: center;
+      }
+
+      .dexx-modal-footer {
+        text-align: center;
+        font-size: 12px;
+        color: #999;
+        margin-top: 20px;
+      }
     `,
 
     // Injeta os estilos CSS na página
@@ -282,20 +301,38 @@
         return `
           <div class="dexx-modal-success-icon">🎉</div>
           <h2 class="dexx-modal-title">Obrigado por participar!</h2>
+          <div class="dexx-modal-answers-summary">
+            <p><strong>Pergunta 1:</strong> ${this.answers.step1}</p>
+            <p><strong>Pergunta 2:</strong> ${this.answers.step2}</p>
+          </div>
           <p class="dexx-modal-question">
             Como agradecimento, preparamos um prêmio especial para você!
           </p>
-          <div class="qo__options">
-          xxx
-<a href class="dexx-modal-prize-link av-rewarded" data-av-rewarded="true" onclick="" role="button" tabindex="0" data-av-onclick="return false" data-google-rewarded="true" data-google-interstitial="false">
- 🎁 Pegar Prêmio</a>
-
- <a id="qo-hidden-link-1" class="av-rewarded" style="display:none" data-av-rewarded="true" data-google-rewarded="true" data-google-interstitial="false"></a>
-</div>
-<a id="hidden-link" class="av-rewarded" style="display:none" data-av-rewarded="true" data-google-rewarded="true" data-google-interstitial="false"></a>
-Novo TEXTO aquiiiiiiiii  1.0      
-
-`;
+          <div class="dexx-modal-options">
+            <a href="" 
+               class="dexx-modal-prize-link av-rewarded" 
+               data-av-rewarded="true" 
+               data-google-rewarded="true" 
+               data-google-interstitial="false"
+               role="button" 
+               tabindex="0">
+              🎁 Pegar Prêmio
+            </a>
+            <a id="dexx-hidden-link-1" 
+               class="av-rewarded" 
+               style="display:none" 
+               data-av-rewarded="true" 
+               data-google-rewarded="true" 
+               data-google-interstitial="false"></a>
+            <a id="dexx-hidden-link-2" 
+               class="av-rewarded" 
+               style="display:none" 
+               data-av-rewarded="true" 
+               data-google-rewarded="true" 
+               data-google-interstitial="false"></a>
+          </div>
+          <div class="dexx-modal-footer">Veja a recomendação patrocinada para continuar</div>
+        `;
       }
     },
     // Cria o HTML do modal
@@ -341,10 +378,15 @@ Novo TEXTO aquiiiiiiiii  1.0
 
       // Evento do link de prêmio
       const prizeLink = this.modalElement.querySelector('.dexx-modal-prize-link');
-      if (prizeLink) {
+      if (prizeLink && !prizeLink.__dexxBound) {
         prizeLink.addEventListener('click', (e) => {
           e.preventDefault();
           console.log('🎁 Link "Pegar Prêmio" clicado!');
+          
+          // Armazena timestamp para controle
+          try {
+            localStorage.setItem('dexx_prize_clicked', String(Date.now()));
+          } catch(_) {}
           
           // Dispara evento customizado
           const event = new CustomEvent('dexxPrizeClick', {
@@ -355,9 +397,163 @@ Novo TEXTO aquiiiiiiiii  1.0
           });
           window.dispatchEvent(event);
           
-          // Você pode adicionar aqui a lógica do prêmio
-          // Por exemplo: abrir um anúncio recompensado, redirecionar, etc.
+          // Limpa fallback se existir
+          if (this.fallbackTimer) {
+            clearTimeout(this.fallbackTimer);
+            this.fallbackTimer = null;
+          }
+          
+          // Configura fallback (fecha após X segundos se anúncio não aparecer)
+          const fallbackMs = 3000; // 3 segundos
+          this.fallbackTimer = setTimeout(() => {
+            console.warn('⚠️ Fallback ativado - anúncio não detectado');
+            this.safeCloseOnce();
+          }, fallbackMs);
+          
+          // Inicia watchers para detectar anúncios
+          this.startWatchers();
         });
+        prizeLink.__dexxBound = true;
+      }
+    },
+
+    // Fecha o modal de forma segura (apenas uma vez)
+    safeCloseOnce: function() {
+      if (this.closedOnce) return;
+      this.closedOnce = true;
+      this.closeModal();
+    },
+
+    // Anexa listeners do Google Publisher Tag
+    attachGPTListeners: function(attempt) {
+      attempt = attempt || 0;
+      const ready = !!(window.googletag && googletag.apiReady && googletag.pubads);
+      
+      if (!ready) {
+        if (attempt > 200) return;
+        return setTimeout(() => {
+          this.attachGPTListeners(attempt + 1);
+        }, 100);
+      }
+      
+      try {
+        const pubads = googletag.pubads();
+        
+        // Listener para quando anúncio recompensado é fechado
+        pubads.addEventListener('rewardedSlotClosed', () => {
+          console.log('📊 Anúncio recompensado fechado');
+          this.stopWatchers();
+          this.safeCloseOnce();
+        });
+        
+        // Listener para quando anúncio intersticial manual é fechado
+        pubads.addEventListener('gameManualInterstitialSlotClosed', () => {
+          console.log('📊 Anúncio intersticial fechado');
+          this.stopWatchers();
+          this.safeCloseOnce();
+        });
+        
+        console.log('✅ GPT Listeners configurados');
+      } catch(e) {
+        console.error('❌ Erro ao configurar GPT listeners:', e);
+      }
+    },
+
+    // Inicia watchers para detectar anúncios
+    startWatchers: function() {
+      console.log('👀 Iniciando watchers de anúncios...');
+      
+      // MutationObserver para detectar offerwall sendo removido
+      try {
+        this.mutationObserver = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.removedNodes) {
+              mutation.removedNodes.forEach((node) => {
+                // Verifica se o offerwall foi removido
+                if (node.id === 'av-offerwall__wrapper' || 
+                    (node.querySelector && node.querySelector('#av-offerwall__wrapper'))) {
+                  console.log('🎯 Offerwall removido detectado');
+                  if (this.offerwallSeen) {
+                    this.stopWatchers();
+                    this.safeCloseOnce();
+                  }
+                }
+              });
+            }
+          });
+        });
+        
+        this.mutationObserver.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      } catch(e) {
+        console.error('❌ Erro ao criar MutationObserver:', e);
+      }
+      
+      // Polling para detectar offerwall e cookies
+      this.pollId = setInterval(() => {
+        const offerwallElement = document.getElementById('av-offerwall__wrapper');
+        
+        // Se offerwall apareceu
+        if (offerwallElement) {
+          this.offerwallSeen = true;
+          if (this.fallbackTimer) {
+            clearTimeout(this.fallbackTimer);
+            this.fallbackTimer = null;
+          }
+          console.log('✅ Offerwall detectado');
+        }
+        
+        // Se offerwall sumiu depois de ter aparecido
+        if (this.offerwallSeen && !offerwallElement) {
+          console.log('✅ Offerwall fechado - encerrando modal');
+          this.stopWatchers();
+          this.safeCloseOnce();
+        }
+        
+        // Verifica cookie de recompensa
+        if (document.cookie.indexOf('avOfferWallRewarded=true') !== -1) {
+          console.log('✅ Cookie de recompensa detectado');
+          this.stopWatchers();
+          this.safeCloseOnce();
+        }
+      }, 300);
+      
+      // Timeout de segurança (60 segundos)
+      this.pollTimeout = setTimeout(() => {
+        console.warn('⏱️ Timeout de watchers atingido');
+        this.stopWatchers();
+      }, 60000);
+      
+      // Anexa listeners do GPT
+      this.attachGPTListeners(0);
+    },
+
+    // Para todos os watchers
+    stopWatchers: function() {
+      console.log('🛑 Parando watchers...');
+      
+      if (this.pollId) {
+        clearInterval(this.pollId);
+        this.pollId = null;
+      }
+      
+      if (this.pollTimeout) {
+        clearTimeout(this.pollTimeout);
+        this.pollTimeout = null;
+      }
+      
+      if (this.mutationObserver) {
+        try {
+          this.mutationObserver.disconnect();
+        } catch(e) {}
+        this.mutationObserver = null;
+      }
+      
+      if (this.fallbackTimer) {
+        clearTimeout(this.fallbackTimer);
+        this.fallbackTimer = null;
       }
     },
 
@@ -418,6 +614,9 @@ Novo TEXTO aquiiiiiiiii  1.0
     // Fecha o modal
     closeModal: function() {
       if (this.modalElement) {
+        // Para todos os watchers antes de fechar
+        this.stopWatchers();
+        
         this.modalElement.style.animation = 'dexx-modal-fadeout 0.2s ease-out';
         setTimeout(() => {
           if (this.modalElement && this.modalElement.parentNode) {
@@ -426,6 +625,8 @@ Novo TEXTO aquiiiiiiiii  1.0
           this.modalElement = null;
           this.currentStep = 1;
           this.answers = {};
+          this.closedOnce = false;
+          this.offerwallSeen = false;
         }, 200);
       }
     },
@@ -470,5 +671,16 @@ Novo TEXTO aquiiiiiiiii  1.0
 
   // Inicializa automaticamente
   DexxPlugin.init();
+
+  // Listener global para monitorar eventos de prêmio
+  window.addEventListener('dexxPrizeClick', function(e) {
+    console.log('🎁 Evento dexxPrizeClick capturado:', e.detail);
+    console.log('📊 Respostas do usuário:', e.detail.answers);
+  });
+
+  // Listener para monitorar respostas das perguntas
+  window.addEventListener('dexxPluginResponse', function(e) {
+    console.log('📝 Resposta capturada - Step:', e.detail.step, 'Resposta:', e.detail.response);
+  });
 
 })();
