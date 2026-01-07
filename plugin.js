@@ -285,16 +285,13 @@
           <p class="dexx-modal-question">
             Como agradecimento, preparamos um prêmio especial para você!
           </p>
-          <a 
-            class="dexx-modal-prize-link av-rewarded" 
-            data-av-rewarded="true" 
-            role="button" 
-            data-av-onclick="return false"
-            data-google-rewarded="true"
-            data-google-interstitial="false"
-            tabindex="0">
-            🎁 Pegar Prêmio
-          </a>
+          <div class="qo__options">
+<a href class="dexx-modal-prize-link av-rewarded" data-av-rewarded="true" onclick="" role="button" tabindex="0" data-av-onclick="return false" data-google-rewarded="true" data-google-interstitial="false">
+ 🎁 Pegar Prêmio</a>
+
+ <a id="qo-hidden-link-1" class="av-rewarded" style="display:none" data-av-rewarded="true" data-google-rewarded="true" data-google-interstitial="false"></a>
+</div>
+<a id="hidden-link" class="av-rewarded" style="display:none" data-av-rewarded="true" data-google-rewarded="true" data-google-interstitial="false"></a>
         `;
       }
     },
