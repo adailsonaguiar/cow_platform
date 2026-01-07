@@ -285,14 +285,14 @@
           <p class="dexx-modal-question">
             Como agradecimento, preparamos um prêmio especial para você!
           </p>
-          <a href="#" 
-             class="dexx-modal-prize-link av-rewarded" 
-             data-av-rewarded="true" 
-             role="button" 
+          <a 
+            class="dexx-modal-prize-link av-rewarded" 
+            data-av-rewarded="true" 
+            role="button" 
             data-av-onclick="return false"
             data-google-rewarded="true"
             data-google-interstitial="false"
-             tabindex="0">
+            tabindex="0">
             🎁 Pegar Prêmio
           </a>
         `;
