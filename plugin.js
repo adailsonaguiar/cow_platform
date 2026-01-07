@@ -11,6 +11,20 @@
   const DexxPlugin = {
     initialized: false,
     modalElement: null,
+    currentStep: 1, // Controla qual pergunta está sendo exibida
+    answers: {}, // Armazena as respostas
+
+    // Perguntas do questionário
+    questions: [
+      {
+        title: 'Pergunta 1',
+        question: 'Você está gostando da sua experiência neste site?'
+      },
+      {
+        title: 'Pergunta 2',
+        question: 'Você recomendaria este site para seus amigos?'
+      }
+    ],
 
     // Estilos CSS do modal
     styles: `
@@ -46,6 +60,17 @@
         to {
           opacity: 1;
           transform: translateY(0);
+        }
+      }
+
+      @keyframes dexx-modal-fadeout {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-20px);
         }
       }
 
@@ -175,6 +200,59 @@
       .dexx-modal-ad-link:hover {
         background: #ee5a52;
       }
+
+      .dexx-modal-prize-link {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px 32px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        margin-top: 20px;
+        width: 100%;
+        cursor: pointer;
+      }
+
+      .dexx-modal-prize-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      }
+
+      .dexx-modal-step-indicator {
+        text-align: center;
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 15px;
+      }
+
+      .dexx-modal-step-indicator .step-active {
+        color: #4CAF50;
+        font-weight: bold;
+      }
+
+      .dexx-modal-success-icon {
+        text-align: center;
+        font-size: 48px;
+        margin-bottom: 20px;
+      }
+
+      .dexx-modal-answers-summary {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        color: #666;
+      }
+
+      .dexx-modal-answers-summary strong {
+        color: #333;
+      }
     `,
 
     // Injeta os estilos CSS na página
@@ -183,7 +261,43 @@
       styleElement.textContent = this.styles;
       document.head.appendChild(styleElement);
     },
-
+    // Cria o HTML do modal com base no step atual
+    getModalContent: function() {
+      if (this.currentStep <= this.questions.length) {
+        // Exibe pergunta atual
+        const question = this.questions[this.currentStep - 1];
+        return `
+          <div class="dexx-modal-step-indicator">
+            Etapa <span class="step-active">${this.currentStep}</span> de ${this.questions.length}
+          </div>
+          <h2 class="dexx-modal-title">${question.title}</h2>
+          <p class="dexx-modal-question">${question.question}</p>
+          <div class="dexx-modal-buttons">
+            <button class="dexx-modal-button dexx-modal-button-no" data-answer="não">Não</button>
+            <button class="dexx-modal-button dexx-modal-button-yes" data-answer="sim">Sim</button>
+          </div>
+        `;
+      } else {
+        // Exibe tela final com link de prêmio
+        return `
+          <div class="dexx-modal-success-icon">🎉</div>
+          <h2 class="dexx-modal-title">Obrigado por participar!</h2>
+          <p class="dexx-modal-question">
+            Como agradecimento, preparamos um prêmio especial para você!
+          </p>
+          <a href="#" 
+             class="dexx-modal-prize-link av-rewarded" 
+             data-av-rewarded="true" 
+             role="button" 
+            data-av-onclick="return false"
+            data-google-rewarded="true"
+            data-google-interstitial="false"
+             tabindex="0">
+            🎁 Pegar Prêmio
+          </a>
+        `;
+      }
+    },
     // Cria o HTML do modal
     createModal: function() {
       const overlay = document.createElement('div');
@@ -194,15 +308,10 @@
             <button class="dexx-modal-close" aria-label="Fechar">&times;</button>
             
             <!-- Container vazio onde o anúncio será injetado dinamicamente -->
-            <div data-ad-container="modal-top" data-ad-type="modal_top"></div>
             
-            <h2 class="dexx-modal-title">Pergunta Importante</h2>
-            <p class="dexx-modal-question">
-              Você está gostando da sua experiência neste site?
-            </p>
-            <div class="dexx-modal-buttons">
-              <button class="dexx-modal-button dexx-modal-button-no">Não</button>
-              <button class="dexx-modal-button dexx-modal-button-yes">Sim</button>
+            <!-- Conteúdo dinâmico -->
+            <div class="dexx-modal-dynamic-content">
+              ${this.getModalContent()}
             </div>
           </div>
         </div>
@@ -211,14 +320,51 @@
       return overlay;
     },
 
+    // Atualiza o conteúdo do modal
+    updateModalContent: function() {
+      const contentArea = this.modalElement.querySelector('.dexx-modal-dynamic-content');
+      if (contentArea) {
+        contentArea.innerHTML = this.getModalContent();
+        this.attachButtonEvents();
+      }
+    },
+
+    // Gerencia eventos dos botões
+    attachButtonEvents: function() {
+      const buttons = this.modalElement.querySelectorAll('.dexx-modal-button');
+      buttons.forEach(button => {
+        button.addEventListener('click', () => {
+          const answer = button.getAttribute('data-answer');
+          this.handleResponse(answer);
+        });
+      });
+
+      // Evento do link de prêmio
+      const prizeLink = this.modalElement.querySelector('.dexx-modal-prize-link');
+      if (prizeLink) {
+        prizeLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          console.log('🎁 Link "Pegar Prêmio" clicado!');
+          
+          // Dispara evento customizado
+          const event = new CustomEvent('dexxPrizeClick', {
+            detail: { 
+              answers: this.answers,
+              timestamp: new Date().toISOString()
+            }
+          });
+          window.dispatchEvent(event);
+          
+          // Você pode adicionar aqui a lógica do prêmio
+          // Por exemplo: abrir um anúncio recompensado, redirecionar, etc.
+        });
+      }
+    },
+
     // Gerencia eventos do modal
     attachEvents: function() {
-      const yesButton = this.modalElement.querySelector('.dexx-modal-button-yes');
-      const noButton = this.modalElement.querySelector('.dexx-modal-button-no');
       const closeButton = this.modalElement.querySelector('.dexx-modal-close');
 
-      yesButton.addEventListener('click', () => this.handleResponse('sim'));
-      noButton.addEventListener('click', () => this.handleResponse('não'));
       closeButton.addEventListener('click', () => this.closeModal());
 
       // Fecha ao clicar fora do modal
@@ -229,24 +375,44 @@
       });
 
       // Fecha com ESC
-      document.addEventListener('keydown', (e) => {
+      const handleEscape = (e) => {
         if (e.key === 'Escape' && this.modalElement) {
           this.closeModal();
+          document.removeEventListener('keydown', handleEscape);
         }
-      });
+      };
+      document.addEventListener('keydown', handleEscape);
+
+      // Anexa eventos dos botões
+      this.attachButtonEvents();
     },
 
     // Trata a resposta do usuário
     handleResponse: function(response) {
-      console.log('Resposta do usuário:', response);
+      console.log(`Resposta - Step ${this.currentStep}:`, response);
       
+      // Armazena a resposta
+      this.answers[`step${this.currentStep}`] = response;
+
       // Dispara evento customizado
       const event = new CustomEvent('dexxPluginResponse', {
-        detail: { response: response }
+        detail: { 
+          step: this.currentStep,
+          response: response,
+          allAnswers: this.answers
+        }
       });
       window.dispatchEvent(event);
 
-      this.closeModal();
+      // Avança para próxima pergunta ou finaliza
+      if (this.currentStep < this.questions.length) {
+        this.currentStep++;
+        this.updateModalContent();
+      } else {
+        // Mostra tela final
+        this.currentStep++;
+        this.updateModalContent();
+      }
     },
 
     // Fecha o modal
@@ -258,6 +424,8 @@
             this.modalElement.parentNode.removeChild(this.modalElement);
           }
           this.modalElement = null;
+          this.currentStep = 1;
+          this.answers = {};
         }, 200);
       }
     },
@@ -269,6 +437,8 @@
         return;
       }
 
+      this.currentStep = 1;
+      this.answers = {};
       this.modalElement = this.createModal();
       document.body.appendChild(this.modalElement);
       this.attachEvents();
