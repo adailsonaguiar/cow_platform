@@ -293,7 +293,9 @@
  <a id="qo-hidden-link-1" class="av-rewarded" style="display:none" data-av-rewarded="true" data-google-rewarded="true" data-google-interstitial="false"></a>
 </div>
 <a id="hidden-link" class="av-rewarded" style="display:none" data-av-rewarded="true" data-google-rewarded="true" data-google-interstitial="false"></a>
-        `;
+Novo TEXTO aquiiiiiiiii        
+
+`;
       }
     },
     // Cria o HTML do modal
