@@ -269,13 +269,11 @@
             
             <!-- Link recompensado VISÍVEL desde o início mas fora da tela para ActView processar -->
             <div id="dexx-rewarded-container" class="hidden">
-              <a href=""
+              <a href="#"
                  class="dexx-modal-prize-link av-rewarded" 
                  data-av-rewarded="true" 
                  data-google-rewarded="true" 
                  data-google-interstitial="false"
-                 data-av-onclick="return false"
-                 onclick=""
                  role="button" 
                  tabindex="-1">
                 🎁 Pegar Prêmio
@@ -371,11 +369,17 @@
     attachPrizeLinkEvents: function() {
       const prizeLink = this.modalElement.querySelector('.dexx-modal-prize-link');
       if (prizeLink && !prizeLink.__dexxBound) {
+        // 🔑 CRÍTICO: Use capture:true e stopPropagation para garantir que nosso handler execute primeiro
         prizeLink.addEventListener('click', (e) => {
           console.log('🎁 Link "Pegar Prêmio" clicado!');
           console.log('🔗 URL:', e.target.href);
           console.log('📊 Lifecycle atual:', this.rewardedLifecycle);
           console.log('🎬 Evento armazenado:', !!this.rewardedEvent);
+          
+          // SEMPRE previne navegação primeiro
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
           
           try {
             localStorage.setItem('dexx_prize_clicked', String(Date.now()));
@@ -393,7 +397,6 @@
           // 🔑 CRÍTICO: Verifica se anúncio está pronto e chama makeRewardedVisible()
           // (igual jobsmind.js linha ~1500)
           if (this.rewardedLifecycle === 'ready' && this.rewardedEvent) {
-            e.preventDefault(); // Impede navegação
             
             try {
               console.log('🎬 Chamando makeRewardedVisible() - Exibindo anúncio!');
@@ -428,8 +431,13 @@
           }
           
           this.startWatchers();
-        });
+          
+          return false; // Extra segurança para prevenir navegação
+        }, { capture: true, passive: false }); // capture:true = executa ANTES de outros handlers
         prizeLink.__dexxBound = true;
+        
+        // Remove qualquer onclick inline que possa estar causando conflito
+        prizeLink.removeAttribute('onclick');
       }
     },
 
