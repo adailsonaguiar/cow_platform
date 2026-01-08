@@ -264,7 +264,7 @@
             
             <!-- Link recompensado VISÍVEL desde o início mas fora da tela para ActView processar -->
             <div id="dexx-rewarded-container" class="hidden">
-              <a href="" 
+              <a 
                  id="dexx-rewarded-link"
                  class="dexx-modal-prize-link av-rewarded" 
                  data-av-rewarded="true" 
