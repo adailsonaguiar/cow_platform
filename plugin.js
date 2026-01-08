@@ -17,6 +17,11 @@
     pollTimeout: null,
     fallbackTimer: null,
     closedOnce: false,
+    
+    // Variáveis para anúncio rewarded (seguindo jobsmind.js)
+    rewardedEvent: null,
+    rewardedLifecycle: null,
+    rewardGranted: false,
 
     questions: [
       {
@@ -264,32 +269,17 @@
             
             <!-- Link recompensado VISÍVEL desde o início mas fora da tela para ActView processar -->
             <div id="dexx-rewarded-container" class="hidden">
-              <a 
-                 href=""
+              <a href=""
                  class="dexx-modal-prize-link av-rewarded" 
                  data-av-rewarded="true" 
-                 onclick=""
-                 role="button" 
-                 tabindex="0"
-                 data-av-onclick="return false"
                  data-google-rewarded="true" 
                  data-google-interstitial="false"
-                 >
+                 data-av-onclick="return false"
+                 onclick=""
+                 role="button" 
+                 tabindex="-1">
                 🎁 Pegar Prêmio
               </a>
-              <a 
-               id="dexx-rewarded-link"
-               class="av-rewarded" 
-               style="display:none" 
-               data-av-rewarded="true" 
-               data-google-rewarded="true" 
-               data-google-interstitial="false"></a>
-              <a id="hidden-link" 
-                class="av-rewarded" 
-                style="display:none" 
-                data-av-rewarded="true" 
-                data-google-rewarded="true" 
-                data-google-interstitial="false"></a>
             </div>
             
             <div class="dexx-modal-dynamic-content">
@@ -377,11 +367,13 @@
     },
 
     attachPrizeLinkEvents: function() {
-      const prizeLink = this.modalElement.querySelector('#dexx-rewarded-link');
+      const prizeLink = this.modalElement.querySelector('.dexx-modal-prize-link');
       if (prizeLink && !prizeLink.__dexxBound) {
         prizeLink.addEventListener('click', (e) => {
           console.log('🎁 Link "Pegar Prêmio" clicado!');
           console.log('🔗 URL:', e.target.href);
+          console.log('📊 Lifecycle atual:', this.rewardedLifecycle);
+          console.log('🎬 Evento armazenado:', !!this.rewardedEvent);
           
           try {
             localStorage.setItem('dexx_prize_clicked', String(Date.now()));
@@ -396,17 +388,42 @@
           });
           window.dispatchEvent(event);
           
-          if (this.fallbackTimer) {
-            clearTimeout(this.fallbackTimer);
-            this.fallbackTimer = null;
-          }
-          
-          this.fallbackTimer = setTimeout(() => {
-            if (!this.offerwallSeen) {
-              console.warn('⚠️ Timeout: anúncio não detectado em 30s');
+          // 🔑 CRÍTICO: Verifica se anúncio está pronto e chama makeRewardedVisible()
+          // (igual jobsmind.js linha ~1500)
+          if (this.rewardedLifecycle === 'ready' && this.rewardedEvent) {
+            e.preventDefault(); // Impede navegação
+            
+            try {
+              console.log('🎬 Chamando makeRewardedVisible() - Exibindo anúncio!');
+              this.rewardedEvent.makeRewardedVisible(); // ← COMANDO CRÍTICO
+              this.rewardedLifecycle = 'opened';
+              this.offerwallSeen = true;
+              
+              // Cancela fallback
+              if (this.fallbackTimer) {
+                clearTimeout(this.fallbackTimer);
+                this.fallbackTimer = null;
+              }
+              
+            } catch(error) {
+              console.error('❌ Erro ao chamar makeRewardedVisible():', error);
               this.safeCloseOnce();
             }
-          }, 30000);
+            
+          } else {
+            // Anúncio não está pronto
+            console.warn('⚠️ Anúncio rewarded não está pronto!');
+            console.warn('   - Lifecycle:', this.rewardedLifecycle);
+            console.warn('   - Evento existe:', !!this.rewardedEvent);
+            
+            // Configura fallback para fechar se anúncio não aparecer
+            this.fallbackTimer = setTimeout(() => {
+              if (this.rewardedLifecycle !== 'ready') {
+                console.warn('⚠️ Timeout: anúncio não ficou pronto em 10s');
+                this.safeCloseOnce();
+              }
+            }, 10000);
+          }
           
           this.startWatchers();
         });
@@ -431,17 +448,49 @@
       
       try {
         const pubads = googletag.pubads();
-        pubads.addEventListener('rewardedSlotClosed', () => {
-          console.log('📊 Anúncio recompensado fechado');
+        
+        // 🔑 CRÍTICO: Captura quando anúncio rewarded está PRONTO (igual jobsmind.js linha ~920)
+        pubads.addEventListener('rewardedSlotReady', (event) => {
+          console.log('✅ rewardedSlotReady - Anúncio PRONTO para exibição!', event);
+          this.rewardedEvent = event;  // ← Armazena o evento
+          this.rewardedLifecycle = 'ready';  // ← Marca como pronto
+          
+          // Cancela fallback se existir
+          if (this.fallbackTimer) {
+            clearTimeout(this.fallbackTimer);
+            this.fallbackTimer = null;
+            console.log('⏰ Fallback cancelado - anúncio está pronto');
+          }
+        });
+        
+        // 🎁 Captura quando usuário GANHA a recompensa (assistiu completamente)
+        pubads.addEventListener('rewardedSlotGranted', (event) => {
+          console.log('🎁 rewardedSlotGranted - Recompensa CONCEDIDA!', event);
+          this.rewardedLifecycle = 'granted';
+          this.rewardGranted = true;
+        });
+        
+        // ❌ Captura quando anúncio é FECHADO
+        pubads.addEventListener('rewardedSlotClosed', (event) => {
+          console.log('❌ rewardedSlotClosed - Anúncio fechado');
+          
+          if (this.rewardedLifecycle === 'granted') {
+            console.log('✅ Usuário assistiu completamente e ganhou recompensa');
+          } else {
+            console.log('⚠️ Usuário fechou antes de completar');
+          }
+          
           this.stopWatchers();
           this.safeCloseOnce();
         });
+        
         pubads.addEventListener('gameManualInterstitialSlotClosed', () => {
           console.log('📊 Anúncio intersticial fechado');
           this.stopWatchers();
           this.safeCloseOnce();
         });
-        console.log('✅ GPT Listeners configurados');
+        
+        console.log('✅ GPT Listeners configurados (rewardedSlotReady, rewardedSlotGranted, rewardedSlotClosed)');
       } catch(e) {
         console.error('❌ Erro ao configurar GPT listeners:', e);
       }
