@@ -593,7 +593,8 @@
         this.stopWatchers();
       }, 90000);
       
-      this.attachGPTListeners(0);
+      // Nota: attachGPTListeners() já foi chamado em openModal()
+      // Não precisa chamar aqui novamente
     },
 
     stopWatchers: function() {
@@ -692,6 +693,11 @@
       this.modalElement = this.createModal();
       document.body.appendChild(this.modalElement);
       this.attachEvents();
+      
+      // 🔑 CRÍTICO: Registra listeners GPT IMEDIATAMENTE (igual jobsmind.js)
+      // Os listeners precisam estar prontos ANTES do rewardedSlotReady disparar
+      this.attachGPTListeners(0);
+      console.log('🎬 GPT Listeners registrados na abertura do modal');
     },
 
     init: function() {
