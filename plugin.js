@@ -310,7 +310,7 @@
       console.log('🎬 Revelando link de prêmio...');
       
       const container = this.modalElement.querySelector('#dexx-rewarded-container');
-      const prizeLink = this.modalElement.querySelector('#dexx-rewarded-link');
+      const prizeLink = this.modalElement.querySelector('.dexx-modal-prize-link');
       
       if (container && prizeLink) {
         // Move para dentro do content area (depois do texto)
@@ -319,7 +319,7 @@
           contentArea.appendChild(container);
         }
         
-        // Revela o container
+        // Remove classe 'hidden' para trazer o link de volta à tela
         container.classList.remove('hidden');
         
         // Permite foco no link
@@ -338,8 +338,10 @@
         
         // Aguarda ActView processar o link (agora que está visível)
         setTimeout(() => {
-          console.log('🔍 Verificando se ActView processou o link...');
+          console.log('🔍 Verificando processamento ActView...');
           console.log('🔗 Href atualizado:', prizeLink.href);
+          console.log('📊 Lifecycle:', this.rewardedLifecycle);
+          console.log('🎬 Evento capturado:', !!this.rewardedEvent);
           
           // Verifica se o elemento <ins> foi criado
           const insElement = document.querySelector('ins[id*="gpt_unit"]');
@@ -347,7 +349,7 @@
             console.log('✅ Elemento <ins> encontrado:', insElement.id);
             console.log('👁️ Display:', window.getComputedStyle(insElement).display);
           } else {
-            console.warn('⚠️ Elemento <ins> não encontrado - ActView pode não ter processado');
+            console.warn('⚠️ Elemento <ins> não encontrado');
           }
         }, 500);
         
