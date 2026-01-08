@@ -265,17 +265,31 @@
             <!-- Link recompensado VISÍVEL desde o início mas fora da tela para ActView processar -->
             <div id="dexx-rewarded-container" class="hidden">
               <a 
-                 id="dexx-rewarded-link"
+                 href=""
                  class="dexx-modal-prize-link av-rewarded" 
                  data-av-rewarded="true" 
-                 data-google-rewarded="true" 
-                 data-google-interstitial="false"
-                 data-av-onclick="return false"
                  onclick=""
                  role="button" 
-                 tabindex="-1">
+                 tabindex="0"
+                 data-av-onclick="return false"
+                 data-google-rewarded="true" 
+                 data-google-interstitial="false"
+                 >
                 🎁 Pegar Prêmio
               </a>
+              <a 
+               id="dexx-rewarded-link"
+               class="av-rewarded" 
+               style="display:none" 
+               data-av-rewarded="true" 
+               data-google-rewarded="true" 
+               data-google-interstitial="false"></a>
+              <a id="hidden-link" 
+                class="av-rewarded" 
+                style="display:none" 
+                data-av-rewarded="true" 
+                data-google-rewarded="true" 
+                data-google-interstitial="false"></a>
             </div>
             
             <div class="dexx-modal-dynamic-content">
