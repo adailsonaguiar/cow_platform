@@ -308,31 +308,19 @@
           <p class="dexx-modal-question">
             Como agradecimento, preparamos um prêmio especial para você!
           </p>
-          v2.2
+          v2.3
           <div class="dexx-modal-options">
             <a href="#goog_rewarded" 
                class="dexx-modal-prize-link av-rewarded" 
                data-av-rewarded="true" 
                data-google-rewarded="true" 
                data-google-interstitial="false"
+               data-av-onclick="return false"
+               onclick=""
                role="button" 
                tabindex="0">
               🎁 Pegar Prêmio
             </a>
-            <a id="dexx-hidden-link-1" 
-               href="#goog_rewarded"
-               class="av-rewarded" 
-               style="display:none" 
-               data-av-rewarded="true" 
-               data-google-rewarded="true" 
-               data-google-interstitial="false"></a>
-            <a id="dexx-hidden-link-2" 
-               href="#goog_rewarded"
-               class="av-rewarded" 
-               style="display:none" 
-               data-av-rewarded="true" 
-               data-google-rewarded="true" 
-               data-google-interstitial="false"></a>
           </div>
           <div class="dexx-modal-footer">Veja a recomendação patrocinada para continuar</div>
         `;
@@ -422,8 +410,6 @@
       if (prizeLink && !prizeLink.__dexxBound) {
         prizeLink.addEventListener('click', (e) => {
           // NÃO previne preventDefault para deixar ActView/Google processar o link #goog_rewarded
-          e.stopPropagation();
-          
           console.log('🎁 Link "Pegar Prêmio" clicado!');
           console.log('🔗 URL:', e.target.href);
           
@@ -448,41 +434,17 @@
             this.fallbackTimer = null;
           }
           
-          // Configura fallback (fecha após 20 segundos se anúncio não fechar)
-          // Anúncios de vídeo duram ~15s, então 20s é seguro
-          const fallbackMs = 20000; // 20 segundos
+          // Configura fallback (fecha após 30 segundos se anúncio não fechar)
+          const fallbackMs = 30000; // 30 segundos
           this.fallbackTimer = setTimeout(() => {
             if (!this.offerwallSeen) {
-              console.warn('⚠️ Fallback ativado - anúncio não detectado em 20s');
+              console.warn('⚠️ Timeout: anúncio não detectado em 30s, fechando modal');
               this.safeCloseOnce();
             }
           }, fallbackMs);
           
           // Inicia watchers para detectar anúncios
           this.startWatchers();
-          
-          // Se o ActView não disparar automaticamente, tenta forçar
-          setTimeout(() => {
-            // Verifica se offerwall apareceu
-            const offerwall = document.getElementById('av-offerwall__wrapper');
-            if (!offerwall && !this.offerwallSeen) {
-              console.warn('⚠️ Offerwall não detectado, tentando click programático...');
-              
-              // Tenta clicar nos links ocultos (fallback)
-              const hiddenLinks = [
-                document.getElementById('dexx-hidden-link-1'),
-                document.getElementById('dexx-hidden-link-2')
-              ];
-              
-              hiddenLinks.forEach(link => {
-                if (link) {
-                  try {
-                    link.click();
-                  } catch(e) {}
-                }
-              });
-            }
-          }, 1000);
         });
         prizeLink.__dexxBound = true;
       }
