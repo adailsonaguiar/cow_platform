@@ -308,6 +308,7 @@
           <p class="dexx-modal-question">
             Como agradecimento, preparamos um prêmio especial para você!
           </p>
+          v2.1
           <div class="dexx-modal-options">
             <a href="" 
                class="dexx-modal-prize-link av-rewarded" 
