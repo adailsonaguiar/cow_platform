@@ -363,7 +363,45 @@
       if (contentArea) {
         contentArea.innerHTML = this.getModalContent();
         this.attachButtonEvents();
+        
+        // Se estamos na tela final, notifica o sistema de anúncios
+        if (this.currentStep > this.questions.length) {
+          this.setupRewardedAd();
+        }
       }
+    },
+
+    // Configura o anúncio recompensado após tela final aparecer
+    setupRewardedAd: function() {
+      console.log('🎬 Configurando anúncio recompensado...');
+      
+      // Aguarda um momento para garantir que o DOM está pronto
+      setTimeout(() => {
+        const prizeLink = this.modalElement.querySelector('.dexx-modal-prize-link');
+        
+        if (prizeLink) {
+          // Garante que o link tem o atributo href
+          if (!prizeLink.hasAttribute('href')) {
+            prizeLink.setAttribute('href', '');
+          }
+          
+          // Força re-configuração dos atributos (caso ActView tenha perdido)
+          prizeLink.setAttribute('data-av-rewarded', 'true');
+          prizeLink.setAttribute('data-google-rewarded', 'true');
+          prizeLink.setAttribute('data-google-interstitial', 'false');
+          
+          console.log('✅ Link de prêmio configurado:', prizeLink);
+          
+          // Dispara evento customizado para sistemas de anúncios detectarem
+          const event = new CustomEvent('dexxRewardedAdReady', {
+            detail: { 
+              element: prizeLink,
+              answers: this.answers
+            }
+          });
+          window.dispatchEvent(event);
+        }
+      }, 100);
     },
 
     // Gerencia eventos dos botões
@@ -381,11 +419,14 @@
       if (prizeLink && !prizeLink.__dexxBound) {
         prizeLink.addEventListener('click', (e) => {
           e.preventDefault();
+          e.stopPropagation();
+          
           console.log('🎁 Link "Pegar Prêmio" clicado!');
           
           // Armazena timestamp para controle
           try {
             localStorage.setItem('dexx_prize_clicked', String(Date.now()));
+            localStorage.setItem('dexx_once', '1');
           } catch(_) {}
           
           // Dispara evento customizado
@@ -403,15 +444,41 @@
             this.fallbackTimer = null;
           }
           
-          // Configura fallback (fecha após X segundos se anúncio não aparecer)
-          const fallbackMs = 3000; // 3 segundos
+          // Configura fallback (fecha após 20 segundos se anúncio não fechar)
+          // Anúncios de vídeo duram ~15s, então 20s é seguro
+          const fallbackMs = 20000; // 20 segundos
           this.fallbackTimer = setTimeout(() => {
-            console.warn('⚠️ Fallback ativado - anúncio não detectado');
-            this.safeCloseOnce();
+            if (!this.offerwallSeen) {
+              console.warn('⚠️ Fallback ativado - anúncio não detectado em 20s');
+              this.safeCloseOnce();
+            }
           }, fallbackMs);
           
           // Inicia watchers para detectar anúncios
           this.startWatchers();
+          
+          // Se o ActView não disparar automaticamente, tenta forçar
+          setTimeout(() => {
+            // Verifica se offerwall apareceu
+            const offerwall = document.getElementById('av-offerwall__wrapper');
+            if (!offerwall && !this.offerwallSeen) {
+              console.warn('⚠️ Offerwall não detectado, tentando click programático...');
+              
+              // Tenta clicar nos links ocultos (fallback)
+              const hiddenLinks = [
+                document.getElementById('dexx-hidden-link-1'),
+                document.getElementById('dexx-hidden-link-2')
+              ];
+              
+              hiddenLinks.forEach(link => {
+                if (link) {
+                  try {
+                    link.click();
+                  } catch(e) {}
+                }
+              });
+            }
+          }, 1000);
         });
         prizeLink.__dexxBound = true;
       }
@@ -467,12 +534,38 @@
       try {
         this.mutationObserver = new MutationObserver((mutations) => {
           mutations.forEach((mutation) => {
-            if (mutation.removedNodes) {
-              mutation.removedNodes.forEach((node) => {
-                // Verifica se o offerwall foi removido
+            // Detecta quando offerwall é ADICIONADO
+            if (mutation.addedNodes) {
+              mutation.addedNodes.forEach((node) => {
                 if (node.id === 'av-offerwall__wrapper' || 
                     (node.querySelector && node.querySelector('#av-offerwall__wrapper'))) {
-                  console.log('🎯 Offerwall removido detectado');
+                  console.log('✅ Offerwall ADICIONADO detectado');
+                  this.offerwallSeen = true;
+                  if (this.fallbackTimer) {
+                    clearTimeout(this.fallbackTimer);
+                    this.fallbackTimer = null;
+                  }
+                }
+                
+                // Detecta qualquer elemento de anúncio do Google
+                if (node.tagName === 'IFRAME' || 
+                    (node.querySelector && node.querySelector('iframe[id*="google"]'))) {
+                  console.log('✅ Iframe de anúncio detectado');
+                  this.offerwallSeen = true;
+                  if (this.fallbackTimer) {
+                    clearTimeout(this.fallbackTimer);
+                    this.fallbackTimer = null;
+                  }
+                }
+              });
+            }
+            
+            // Detecta quando offerwall é REMOVIDO
+            if (mutation.removedNodes) {
+              mutation.removedNodes.forEach((node) => {
+                if (node.id === 'av-offerwall__wrapper' || 
+                    (node.querySelector && node.querySelector('#av-offerwall__wrapper'))) {
+                  console.log('🎯 Offerwall REMOVIDO detectado');
                   if (this.offerwallSeen) {
                     this.stopWatchers();
                     this.safeCloseOnce();
@@ -497,12 +590,14 @@
         
         // Se offerwall apareceu
         if (offerwallElement) {
+          if (!this.offerwallSeen) {
+            console.log('✅ Offerwall detectado via polling');
+          }
           this.offerwallSeen = true;
           if (this.fallbackTimer) {
             clearTimeout(this.fallbackTimer);
             this.fallbackTimer = null;
           }
-          console.log('✅ Offerwall detectado');
         }
         
         // Se offerwall sumiu depois de ter aparecido
@@ -518,13 +613,21 @@
           this.stopWatchers();
           this.safeCloseOnce();
         }
+        
+        // Verifica cookie de intersticial
+        if (document.cookie.indexOf('avInterstitialViewed=true') !== -1) {
+          console.log('✅ Cookie de intersticial detectado');
+          this.stopWatchers();
+          this.safeCloseOnce();
+        }
       }, 300);
       
-      // Timeout de segurança (60 segundos)
+      // Timeout de segurança (90 segundos - para anúncios de vídeo longos)
       this.pollTimeout = setTimeout(() => {
-        console.warn('⏱️ Timeout de watchers atingido');
+        console.warn('⏱️ Timeout de watchers atingido (90s)');
         this.stopWatchers();
-      }, 60000);
+        // Não fecha automaticamente no timeout, deixa usuário fechar
+      }, 90000);
       
       // Anexa listeners do GPT
       this.attachGPTListeners(0);
