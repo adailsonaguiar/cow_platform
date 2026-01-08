@@ -1,499 +1,655 @@
-(function () {
+(function() {
   'use strict';
 
-  var CFG = window.QO_CONFIG || {};
-  var id  = (CFG.id || 'default');
-
-  var root = document.querySelector('.qo[data-qo-id="' + id + '"]') || document.getElementById('qo-' + id);
-  if (!root) return;
-
-  var adMode    = (root.getAttribute('data-ad-mode') || CFG.adMode || 'rewarded').toLowerCase();
-  var entryMode = (CFG.entryMode || 'quiz').toLowerCase();
-
-  if (!root.hasAttribute('hidden')) root.setAttribute('hidden', '');
-  root.setAttribute('aria-hidden', 'true');
-  root.style.display = 'none';
-
-  try {
-    var onceKey = 'qo_once_' + id;
-    if (localStorage.getItem(onceKey) === '1') {
-      localStorage.removeItem(onceKey);
-      if (root.parentNode) root.parentNode.removeChild(root);
-      return;
-    }
-  } catch(e){}
-
-  try {
-    var key  = 'qo_seen_' + id, now = Date.now();
-    var cdMs = (CFG.cooldownMin || 0) * 60 * 1000;
-    var seen = parseInt(localStorage.getItem(key) || '0', 10);
-    if (CFG.autoShow !== false && cdMs > 0 && seen && (now - seen) < cdMs) {
-      if (root.parentNode) root.parentNode.removeChild(root);
-      return;
-    }
-  } catch (e) {}
-
-  var html        = document.documentElement;
-  var barFill     = root.querySelector('.qo__bar__fill');
-  var progressEl  = root.querySelector('.qo__progress');
-  var stepsEls    = Array.prototype.slice.call(root.querySelectorAll('.qo__step'));
-  var loadingWrap = root.querySelector('.qo__loading');
-  var finalWrap   = root.querySelector('.qo__final');
-  var wheelStep   = root.querySelector('.qo__step--wheel');
-
-  var LO_TEXT = (root.querySelector('.qo__loadingText') ? root.querySelector('.qo__loadingText').textContent : 'Procurando as melhores oportunidades').trim();
-  var LO_MS   = parseInt(root.getAttribute('data-loading-ms') || '1600', 10) || 1600;
-
-  var wheelPrizeLabel = '';
-
-  initWheel();
-
-  var state = { stepIndex: 0, total: stepsEls.length, answers: [] };
-  if (!state.total) return;
-
-  function lock(){ html.classList.add('qo-lock'); }
-  function unlock(){ html.classList.remove('qo-lock'); }
-
-  function updateProgress(){
-    var pct = (state.stepIndex / state.total) * 100;
-    if (state.stepIndex === 0) pct = Math.max(6, pct);
-    if (barFill) barFill.style.width = pct + '%';
-    if (progressEl) progressEl.textContent = 'Pergunta ' + (state.stepIndex + 1) + ' de ' + state.total;
+  if (window.DexxPlugin) {
+    console.warn('Dexx Plugin já foi inicializado');
+    return;
   }
 
-  function showOnly(el){
-    stepsEls.forEach(function(s){ s.hidden = (s !== el); });
-    if (loadingWrap) loadingWrap.hidden = true;
-    if (finalWrap)   finalWrap.hidden   = true;
-  }
+  const DexxPlugin = {
+    initialized: false,
+    modalElement: null,
+    currentStep: 1,
+    answers: {},
+    offerwallSeen: false,
+    pollId: null,
+    mutationObserver: null,
+    pollTimeout: null,
+    fallbackTimer: null,
+    closedOnce: false,
 
-  function focusFirstButton(el){
-    setTimeout(function(){
-      var b = el && el.querySelector('.qo__btn');
-      if (b) b.focus();
-    }, 10);
-  }
+    questions: [
+      {
+        title: 'Pergunta 1',
+        question: 'Você está gostando da sua experiência neste site?'
+      },
+      {
+        title: 'Pergunta 2',
+        question: 'Você recomendaria este site para seus amigos?'
+      }
+    ],
 
-  function renderStep(){
-    var stepEl = stepsEls[state.stepIndex];
-    if (!stepEl) { done(); return; }
-    showOnly(stepEl);
-    updateProgress();
-    focusFirstButton(stepEl);
-  }
+    styles: `
+      .dexx-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 999999;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      }
 
-  function selectOption(label, index){
-    state.answers.push({ step: state.stepIndex, label: label, index: index });
-    window.dispatchEvent(new CustomEvent('qo_answer', {
-      detail: { id: id, step: state.stepIndex, label: label, index: index }
-    }));
-    state.stepIndex += 1;
-    if (state.stepIndex >= state.total) {
-      done();
-    } else {
-      renderStep();
-      window.dispatchEvent(new CustomEvent('qo_step_view', {
-        detail: { id: id, step: state.stepIndex }
-      }));
-    }
-  }
+      .dexx-modal-content {
+        background-color: white;
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        animation: dexx-modal-fadein 0.3s ease-out;
+      }
 
-  function showLoadingThenFinish(){
-    if (barFill) barFill.style.width = '100%';
-    stepsEls.forEach(function(s){ s.hidden = true; });
-    if (progressEl) progressEl.textContent = '';
-    if (loadingWrap){
-      var txt = loadingWrap.querySelector('.qo__loadingText');
-      if (txt) txt.textContent = LO_TEXT;
-      loadingWrap.hidden = false;
-    }
-    setTimeout(finishView, Math.max(300, LO_MS));
-  }
+      @keyframes dexx-modal-fadein {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-  var closedOnce = false;
-  function safeCloseOnce(){
-    if (closedOnce) return;
-    closedOnce = true;
-    close();
-  }
+      .dexx-modal-title {
+        margin: 0 0 20px 0;
+        font-size: 24px;
+        font-weight: 600;
+        color: #333;
+      }
 
-  var fallbackTimer = null;
-  var offerwallSeen = false, pollId = null, mo = null, pollTimeout = null;
+      .dexx-modal-question {
+        margin: 0 0 30px 0;
+        font-size: 16px;
+        color: #666;
+        line-height: 1.5;
+      }
 
-  function attachGptListeners(attempt){
-    attempt = attempt || 0;
-    var ready = !!(window.googletag && googletag.apiReady && googletag.pubads);
-    if (!ready) {
-      if (attempt > 200) return;
-      return setTimeout(function(){ attachGptListeners(attempt+1); }, 100);
-    }
-    try {
-      var pubads = googletag.pubads();
-      pubads.addEventListener('rewardedSlotClosed', function(){ stopWatchers(); safeCloseOnce(); });
-      pubads.addEventListener('gameManualInterstitialSlotClosed', function(){ stopWatchers(); safeCloseOnce(); });
-    } catch(_) {}
-  }
+      .dexx-modal-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+      }
 
-  function startWatchers(){
-    try {
-      mo = new MutationObserver(function(muts){
-        muts.forEach(function(m){
-          m.removedNodes && m.removedNodes.forEach(function(n){
-            if (n.id === 'av-offerwall__wrapper' || (n.querySelector && n.querySelector('#av-offerwall__wrapper'))){
-              stopWatchers(); safeCloseOnce();
+      .dexx-modal-button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .dexx-modal-button-yes {
+        background-color: #4CAF50;
+        color: white;
+      }
+
+      .dexx-modal-button-yes:hover {
+        background-color: #45a049;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+      }
+
+      .dexx-modal-button-no {
+        background-color: #f44336;
+        color: white;
+      }
+
+      .dexx-modal-button-no:hover {
+        background-color: #da190b;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+      }
+
+      .dexx-modal-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 28px;
+        color: #999;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+      }
+
+      .dexx-modal-close:hover {
+        color: #333;
+      }
+
+      .dexx-modal-content-wrapper {
+        position: relative;
+      }
+
+      .dexx-modal-prize-link {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px 32px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        margin-top: 20px;
+        width: 100%;
+        cursor: pointer;
+      }
+
+      .dexx-modal-prize-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      }
+
+      .dexx-modal-step-indicator {
+        text-align: center;
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 15px;
+      }
+
+      .dexx-modal-step-indicator .step-active {
+        color: #4CAF50;
+        font-weight: bold;
+      }
+
+      .dexx-modal-success-icon {
+        text-align: center;
+        font-size: 48px;
+        margin-bottom: 20px;
+      }
+
+      .dexx-modal-answers-summary {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        color: #666;
+      }
+
+      .dexx-modal-answers-summary strong {
+        color: #333;
+      }
+
+      .dexx-modal-options {
+        text-align: center;
+      }
+
+      .dexx-modal-footer {
+        text-align: center;
+        font-size: 12px;
+        color: #999;
+        margin-top: 20px;
+      }
+
+      #dexx-rewarded-container {
+        text-align: center;
+        margin-top: 20px;
+      }
+      
+      #dexx-rewarded-container.hidden {
+        position: absolute;
+        left: -9999px;
+        opacity: 0;
+        pointer-events: none;
+      }
+    `,
+
+    injectStyles: function() {
+      const styleElement = document.createElement('style');
+      styleElement.textContent = this.styles;
+      document.head.appendChild(styleElement);
+    },
+
+    getModalContent: function() {
+      if (this.currentStep <= this.questions.length) {
+        const question = this.questions[this.currentStep - 1];
+        return `
+          <div class="dexx-modal-step-indicator">
+            Etapa <span class="step-active">${this.currentStep}</span> de ${this.questions.length}
+          </div>
+          <h2 class="dexx-modal-title">${question.title}</h2>
+          <p class="dexx-modal-question">${question.question}</p>
+          <div class="dexx-modal-buttons">
+            <button class="dexx-modal-button dexx-modal-button-no" data-answer="não">Não</button>
+            <button class="dexx-modal-button dexx-modal-button-yes" data-answer="sim">Sim</button>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="dexx-modal-success-icon">🎉</div>
+          <h2 class="dexx-modal-title">Obrigado por participar!</h2>
+          <div class="dexx-modal-answers-summary">
+            <p><strong>Pergunta 1:</strong> ${this.answers.step1}</p>
+            <p><strong>Pergunta 2:</strong> ${this.answers.step2}</p>
+          </div>
+          <p class="dexx-modal-question">
+            Como agradecimento, preparamos um prêmio especial para você!
+          </p>
+          <div class="dexx-modal-footer">Veja a recomendação patrocinada para continuar</div>
+        `;
+      }
+    },
+
+    // MUDANÇA PRINCIPAL: Link criado desde o início
+    createModal: function() {
+      const overlay = document.createElement('div');
+      overlay.className = 'dexx-modal-overlay';
+      overlay.innerHTML = `
+        <div class="dexx-modal-content-wrapper">
+          <div class="dexx-modal-content">
+            <button class="dexx-modal-close" aria-label="Fechar">&times;</button>
+            
+            <!-- Link recompensado VISÍVEL desde o início mas fora da tela para ActView processar -->
+            <div id="dexx-rewarded-container" class="hidden">
+              <a href="" 
+                 id="dexx-rewarded-link"
+                 class="dexx-modal-prize-link av-rewarded" 
+                 data-av-rewarded="true" 
+                 data-google-rewarded="true" 
+                 data-google-interstitial="false"
+                 data-av-onclick="return false"
+                 onclick=""
+                 role="button" 
+                 tabindex="-1">
+                🎁 Pegar Prêmio
+              </a>
+            </div>
+            
+            <div class="dexx-modal-dynamic-content">
+              ${this.getModalContent()}
+            </div>
+          </div>
+        </div>
+      `;
+
+      return overlay;
+    },
+
+    updateModalContent: function() {
+      const contentArea = this.modalElement.querySelector('.dexx-modal-dynamic-content');
+      if (contentArea) {
+        contentArea.innerHTML = this.getModalContent();
+        this.attachButtonEvents();
+        
+        // Revela o link quando chega na tela final
+        if (this.currentStep > this.questions.length) {
+          this.showRewardedLink();
+        }
+      }
+    },
+
+    // NOVA FUNÇÃO: Apenas revela o link que já existe
+    showRewardedLink: function() {
+      console.log('🎬 Revelando link de prêmio...');
+      
+      const container = this.modalElement.querySelector('#dexx-rewarded-container');
+      const prizeLink = this.modalElement.querySelector('#dexx-rewarded-link');
+      
+      if (container && prizeLink) {
+        // Move para dentro do content area (depois do texto)
+        const contentArea = this.modalElement.querySelector('.dexx-modal-dynamic-content');
+        if (contentArea) {
+          contentArea.appendChild(container);
+        }
+        
+        // Revela o container
+        container.classList.remove('hidden');
+        
+        // Permite foco no link
+        prizeLink.setAttribute('tabindex', '0');
+        
+        console.log('✅ Link revelado:', prizeLink);
+        console.log('🔗 Href:', prizeLink.href);
+        console.log('📋 Atributos:', {
+          'class': prizeLink.className,
+          'data-av-rewarded': prizeLink.getAttribute('data-av-rewarded'),
+          'data-google-rewarded': prizeLink.getAttribute('data-google-rewarded'),
+          'data-google-interstitial': prizeLink.getAttribute('data-google-interstitial'),
+          'data-av-onclick': prizeLink.getAttribute('data-av-onclick'),
+          'onclick': prizeLink.getAttribute('onclick')
+        });
+        
+        // Aguarda ActView processar o link (agora que está visível)
+        setTimeout(() => {
+          console.log('🔍 Verificando se ActView processou o link...');
+          console.log('🔗 Href atualizado:', prizeLink.href);
+          
+          // Verifica se o elemento <ins> foi criado
+          const insElement = document.querySelector('ins[id*="gpt_unit"]');
+          if (insElement) {
+            console.log('✅ Elemento <ins> encontrado:', insElement.id);
+            console.log('👁️ Display:', window.getComputedStyle(insElement).display);
+          } else {
+            console.warn('⚠️ Elemento <ins> não encontrado - ActView pode não ter processado');
+          }
+        }, 500);
+        
+        // Anexa nossos listeners
+        this.attachPrizeLinkEvents();
+      }
+    },
+
+    attachButtonEvents: function() {
+      const buttons = this.modalElement.querySelectorAll('.dexx-modal-button');
+      buttons.forEach(button => {
+        button.addEventListener('click', () => {
+          const answer = button.getAttribute('data-answer');
+          this.handleResponse(answer);
+        });
+      });
+    },
+
+    attachPrizeLinkEvents: function() {
+      const prizeLink = this.modalElement.querySelector('#dexx-rewarded-link');
+      if (prizeLink && !prizeLink.__dexxBound) {
+        prizeLink.addEventListener('click', (e) => {
+          console.log('🎁 Link "Pegar Prêmio" clicado!');
+          console.log('🔗 URL:', e.target.href);
+          
+          try {
+            localStorage.setItem('dexx_prize_clicked', String(Date.now()));
+            localStorage.setItem('dexx_once', '1');
+          } catch(_) {}
+          
+          const event = new CustomEvent('dexxPrizeClick', {
+            detail: { 
+              answers: this.answers,
+              timestamp: new Date().toISOString()
+            }
+          });
+          window.dispatchEvent(event);
+          
+          if (this.fallbackTimer) {
+            clearTimeout(this.fallbackTimer);
+            this.fallbackTimer = null;
+          }
+          
+          this.fallbackTimer = setTimeout(() => {
+            if (!this.offerwallSeen) {
+              console.warn('⚠️ Timeout: anúncio não detectado em 30s');
+              this.safeCloseOnce();
+            }
+          }, 30000);
+          
+          this.startWatchers();
+        });
+        prizeLink.__dexxBound = true;
+      }
+    },
+
+    safeCloseOnce: function() {
+      if (this.closedOnce) return;
+      this.closedOnce = true;
+      this.closeModal();
+    },
+
+    attachGPTListeners: function(attempt) {
+      attempt = attempt || 0;
+      const ready = !!(window.googletag && googletag.apiReady && googletag.pubads);
+      
+      if (!ready) {
+        if (attempt > 200) return;
+        return setTimeout(() => this.attachGPTListeners(attempt + 1), 100);
+      }
+      
+      try {
+        const pubads = googletag.pubads();
+        pubads.addEventListener('rewardedSlotClosed', () => {
+          console.log('📊 Anúncio recompensado fechado');
+          this.stopWatchers();
+          this.safeCloseOnce();
+        });
+        pubads.addEventListener('gameManualInterstitialSlotClosed', () => {
+          console.log('📊 Anúncio intersticial fechado');
+          this.stopWatchers();
+          this.safeCloseOnce();
+        });
+        console.log('✅ GPT Listeners configurados');
+      } catch(e) {
+        console.error('❌ Erro ao configurar GPT listeners:', e);
+      }
+    },
+
+    startWatchers: function() {
+      console.log('👀 Iniciando watchers de anúncios...');
+      
+      try {
+        this.mutationObserver = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.addedNodes) {
+              mutation.addedNodes.forEach((node) => {
+                if (node.id === 'av-offerwall__wrapper' || 
+                    (node.querySelector && node.querySelector('#av-offerwall__wrapper'))) {
+                  console.log('✅ Offerwall ADICIONADO detectado');
+                  this.offerwallSeen = true;
+                  if (this.fallbackTimer) {
+                    clearTimeout(this.fallbackTimer);
+                    this.fallbackTimer = null;
+                  }
+                }
+                
+                if (node.tagName === 'IFRAME' || node.tagName === 'INS' ||
+                    (node.querySelector && (node.querySelector('iframe[id*="google"]') || node.querySelector('ins[id*="gpt_unit"]')))) {
+                  console.log('✅ Elemento de anúncio Google detectado:', node.tagName, node.id);
+                  this.offerwallSeen = true;
+                  if (this.fallbackTimer) {
+                    clearTimeout(this.fallbackTimer);
+                    this.fallbackTimer = null;
+                  }
+                }
+              });
+            }
+            
+            if (mutation.removedNodes) {
+              mutation.removedNodes.forEach((node) => {
+                if (node.id === 'av-offerwall__wrapper' || 
+                    (node.querySelector && node.querySelector('#av-offerwall__wrapper'))) {
+                  console.log('🎯 Offerwall REMOVIDO detectado');
+                  if (this.offerwallSeen) {
+                    this.stopWatchers();
+                    this.safeCloseOnce();
+                  }
+                }
+              });
             }
           });
         });
-      });
-      mo.observe(document.body, { childList: true, subtree: true });
-    } catch(_){}
-
-    pollId = setInterval(function(){
-      var w = document.getElementById('av-offerwall__wrapper');
-      if (w) {
-        offerwallSeen = true;
-        if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
-      }
-      if (offerwallSeen && !w) { stopWatchers(); safeCloseOnce(); }
-      if (document.cookie.indexOf('avOfferWallRewarded=true') !== -1) { stopWatchers(); safeCloseOnce(); }
-    }, 300);
-    pollTimeout = setTimeout(function(){ stopWatchers(); }, 60000);
-
-    attachGptListeners(0);
-  }
-
-  function stopWatchers(){
-    if (pollId) { clearInterval(pollId); pollId = null; }
-    if (pollTimeout) { clearTimeout(pollTimeout); pollTimeout = null; }
-    if (mo) { try { mo.disconnect(); } catch(_){ } mo = null; }
-    if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
-  }
-
-  function finishView(){
-    if (loadingWrap) loadingWrap.hidden = true;
-    if (finalWrap)   finalWrap.hidden   = false;
-    focusFirstButton(finalWrap);
-
-    if (adMode === 'interstitial') {
-      var ctaI = finalWrap.querySelector('.qo__btn--interstitial, .qo__btn[href="#"]') || finalWrap.querySelector('.qo__btn');
-      if (ctaI && !ctaI.__qoBound) {
-        ctaI.addEventListener('click', function(e){
-          if (e && e.preventDefault) e.preventDefault();
-          if (e && e.stopPropagation) e.stopPropagation();
-          try {
-            localStorage.setItem('qo_once_' + id, '1');
-            localStorage.setItem('qo_seen_' + id, String(Date.now()));
-          } catch(_){}
-          safeCloseOnce();
-        }, { passive:false });
-        ctaI.__qoBound = true;
-      }
-    } else {
-      var ctaR = finalWrap.querySelector('.qo__btn.av-rewarded, .qo__btn[data-av-rewarded="true"]');
-      if (ctaR) {
-        if (!ctaR.hasAttribute('href')) ctaR.setAttribute('href', '');
-        ctaR.setAttribute('data-av-rewarded','true');
-        ctaR.setAttribute('data-google-rewarded','true');
-        ctaR.setAttribute('data-google-interstitial','false');
-
-        if (!ctaR.__qoOnceBound){
-          ctaR.addEventListener('click', function(){
-            try {
-              localStorage.setItem('qo_once_' + id, '1');
-              localStorage.setItem('qo_seen_' + id, String(Date.now()));
-            } catch(_){}
-            if (fallbackTimer) clearTimeout(fallbackTimer);
-            var fbMs = (typeof CFG.rewardedFallbackMs === 'number') ? CFG.rewardedFallbackMs : 2500;
-            fallbackTimer = setTimeout(function(){
-              if (!offerwallSeen) { stopWatchers(); safeCloseOnce(); }
-            }, Math.max(500, fbMs));
-          });
-          ctaR.__qoOnceBound = true;
-        }
-      }
-      startWatchers();
-    }
-
-    window.dispatchEvent(new CustomEvent('qo_complete', {
-      detail: { id: id, answers: state.answers.slice() }
-    }));
-  }
-
-  function done(){
-    if (LO_MS > 0) showLoadingThenFinish();
-    else finishView();
-  }
-
-  function hydrateStepButtons() {
-    stepsEls.forEach(function (stepEl) {
-      var buttons = stepEl.querySelectorAll('.qo__btn');
-
-      buttons.forEach(function (btn, idx) {
-        if (btn.classList.contains('qo__wheelSpin')) return;
-        if (btn.classList.contains('qo__wheelRedeem')) return;
         
-        if (btn.__qoHandlerBound) return;
-        
-        btn.addEventListener('click', function (ev) {
-          ev.preventDefault();
-          var label = btn.getAttribute('data-qo-label') || btn.textContent || '';
-          selectOption(label.trim(), idx);
+        this.mutationObserver.observe(document.body, {
+          childList: true,
+          subtree: true
         });
-        
-        btn.__qoHandlerBound = true;
-      });
-    });
-  }
-
-  function hydrateVisualButtons() {
-    var visualSteps = Array.prototype.slice.call(root.querySelectorAll('.qo__step--visual'));
-    
-    visualSteps.forEach(function (stepEl) {
-      var buttons = stepEl.querySelectorAll('.qo__visualOption');
+      } catch(e) {
+        console.error('❌ Erro ao criar MutationObserver:', e);
+      }
       
-      buttons.forEach(function (btn, idx) {
-        if (btn.__qoVisualHandlerBound) return;
+      this.pollId = setInterval(() => {
+        const offerwallElement = document.getElementById('av-offerwall__wrapper');
+        const googleIns = document.querySelector('ins[id*="gpt_unit"]');
         
-        btn.addEventListener('click', function (ev) {
-          ev.preventDefault();
-          var label = btn.getAttribute('data-qo-label') || '';
-          if (!label) {
-            var labelEl = btn.querySelector('.qo__visualLabel');
-            label = labelEl ? labelEl.textContent : '';
+        if (offerwallElement || googleIns) {
+          if (!this.offerwallSeen) {
+            console.log('✅ Anúncio detectado via polling');
           }
-          selectOption(label.trim(), idx);
-        });
-        
-        btn.addEventListener('keydown', function(ev) {
-          if (ev.key === 'Enter' || ev.key === ' ') {
-            ev.preventDefault();
-            btn.click();
-          }
-        });
-        
-        btn.__qoVisualHandlerBound = true;
-      });
-    });
-  }
-
-  var opened = false;
-  function open(){
-    if (opened) return;
-    opened = true;
-
-    try { localStorage.setItem('qo_seen_' + id, String(Date.now())); } catch(_){}
-
-    if (root.parentNode !== document.body) document.body.appendChild(root);
-
-    root.hidden = false;
-    root.removeAttribute('hidden');
-    root.style.display = '';
-    root.removeAttribute('aria-hidden');
-
-    lock();
-    hydrateStepButtons();
-    hydrateVisualButtons();
-    renderStep();
-
-    window.dispatchEvent(new CustomEvent('qo_open', { detail: { id: id } }));
-    window.dispatchEvent(new CustomEvent('qo_step_view', { detail: { id: id, step: 0 } }));
-  }
-
-  function close(){
-    stopWatchers();
-    if (root && root.parentNode) root.parentNode.removeChild(root);
-    unlock();
-    window.dispatchEvent(new CustomEvent('qo_close', { detail: { id: id } }));
-  }
-
-  window.QuizOverlay = window.QuizOverlay || {};
-  window.QuizOverlay.show  = open;
-  window.QuizOverlay.close = close;
-  window.QuizOverlay.resetSeen = function(){
-    try{ localStorage.removeItem('qo_seen_' + id); localStorage.removeItem('qo_once_' + id);}catch(_){}
-  };
-
-  var delayMs = (typeof CFG.openDelayMs === 'number') ? CFG.openDelayMs : 2000;
-  if (CFG.autoShow !== false) {
-    setTimeout(open, delayMs);
-  }
-
-  function initWheel() {
-    if (!wheelStep) return;
-
-    var wheelEl   = wheelStep.querySelector('.qo__wheel');
-    var prizeRow  = wheelStep.querySelector('.qo__wheelResult');
-    var prizeEl   = wheelStep.querySelector('.qo__wheelPrize');
-    var redeemBtn = wheelStep.querySelector('.qo__wheelRedeem');
-    var spinBtn   = wheelStep.querySelector('.qo__wheelSpin');
-
-    if (!wheelEl) return;
-
-    wheelEl.style.position = 'relative';
-
-    if (prizeRow) {
-      prizeRow.hidden = true;
-      prizeRow.style.display = 'none';
-    }
-    if (redeemBtn) {
-      redeemBtn.hidden = true;
-      redeemBtn.style.display = 'none';
-    }
-
-    var opts = [];
-    try {
-      var raw = wheelEl.getAttribute('data-wheel-options');
-      if (raw) opts = JSON.parse(raw);
-    } catch (_){}
-
-    if ((!opts || !opts.length) && CFG.wheel && Array.isArray(CFG.wheel.options)) {
-      opts = CFG.wheel.options.slice();
-    }
-    if (!opts || !opts.length) return;
-
-    var fixedIndex = 0;
-    var attrIndex  = wheelEl.getAttribute('data-wheel-fixed-index');
-    if (attrIndex !== null && attrIndex !== '') {
-      fixedIndex = parseInt(attrIndex, 10) || 0;
-    } else if (CFG.wheel && typeof CFG.wheel.fixedIndex === 'number') {
-      fixedIndex = CFG.wheel.fixedIndex | 0;
-    }
-    if (fixedIndex < 0 || fixedIndex >= opts.length) fixedIndex = 0;
-
-    wheelPrizeLabel = '';
-
-    var colors = ['#ff6b81','#ffc542','#28c76f','#00cfe8','#7367f0','#FF9F43'];
-    var sliceAngle = 360 / opts.length;
-    var gradientParts = [];
-
-    for (var i = 0; i < opts.length; i++) {
-      var start = i * sliceAngle;
-      var end   = start + sliceAngle;
-      gradientParts.push(colors[i % colors.length] + ' ' + start + 'deg ' + end + 'deg');
-    }
-
-    wheelEl.style.background = 'conic-gradient(' + gradientParts.join(',') + ')';
-
-    // Função para copiar textos traduzidos
-    function copyTranslatedTexts() {
-      var translateContainer = wheelStep.querySelector('.qo__wheelTranslate');
-      if (!translateContainer) return;
-      
-      var translatedTexts = translateContainer.querySelectorAll('[data-translate-for]');
-      var visibleLabels = wheelEl.querySelectorAll('.qo__wheelLabel');
-      
-      translatedTexts.forEach(function(translatedSpan) {
-        var index = parseInt(translatedSpan.getAttribute('data-translate-for'), 10);
-        var text = translatedSpan.textContent.trim();
-        var visibleLabel = visibleLabels[index];
-        
-        if (visibleLabel && text) {
-          visibleLabel.textContent = text;
-        }
-      });
-    }
-    
-    // Tenta copiar imediatamente
-    copyTranslatedTexts();
-    
-    // Tenta após delays (para GTranslate terminar)
-    setTimeout(copyTranslatedTexts, 300);
-    setTimeout(copyTranslatedTexts, 800);
-    setTimeout(copyTranslatedTexts, 1500);
-    setTimeout(copyTranslatedTexts, 3000);
-    
-    // Observer para detectar mudanças do GTranslate
-    var translateContainer = wheelStep.querySelector('.qo__wheelTranslate');
-    if (translateContainer && window.MutationObserver) {
-      var observer = new MutationObserver(function() {
-        copyTranslatedTexts();
-      });
-      observer.observe(translateContainer, {
-        childList: true,
-        subtree: true,
-        characterData: true
-      });
-      
-      setTimeout(function() {
-        observer.disconnect();
-      }, 5000);
-    }
-
-    var spinning = false;
-    var currentRotation = 0;
-
-    function spin() {
-      if (spinning) return;
-      spinning = true;
-
-      if (prizeRow) {
-        prizeRow.hidden = true;
-        prizeRow.style.display = 'none';
-      }
-      if (redeemBtn) {
-        redeemBtn.hidden = true;
-        redeemBtn.style.display = 'none';
-      }
-
-      if (spinBtn) {
-        spinBtn.disabled = true;
-        spinBtn.style.display = 'none';
-      }
-
-      var extraTurns = 4 + Math.floor(Math.random() * 2);
-      var sliceCenter = sliceAngle * fixedIndex + sliceAngle / 2;
-      var neededRotation = 270 - sliceCenter + sliceAngle + (sliceAngle / 2);
-      
-      neededRotation = neededRotation % 360;
-      if (neededRotation <= 0) neededRotation += 360;
-      
-      var finalRotation = currentRotation + extraTurns * 360 + neededRotation;
-      currentRotation = finalRotation;
-
-      wheelEl.style.transition = 'transform 2.4s cubic-bezier(0.25, 0.1, 0.25, 1)';
-      wheelEl.style.transform  = 'rotate(' + finalRotation + 'deg)';
-
-      var onEnd = function () {
-        wheelEl.removeEventListener('transitionend', onEnd);
-        spinning = false;
-
-        var allLabels = wheelEl.querySelectorAll('.qo__wheelLabel');
-        if (allLabels[fixedIndex]) {
-          wheelPrizeLabel = allLabels[fixedIndex].textContent.trim();
-          if (redeemBtn) {
-            redeemBtn.setAttribute('data-qo-label', wheelPrizeLabel);
+          this.offerwallSeen = true;
+          if (this.fallbackTimer) {
+            clearTimeout(this.fallbackTimer);
+            this.fallbackTimer = null;
           }
         }
-
-        if (prizeRow) {
-          prizeRow.hidden = false;
-          prizeRow.style.display = '';
+        
+        if (this.offerwallSeen && !offerwallElement && !googleIns) {
+          console.log('✅ Anúncio fechado - encerrando modal');
+          this.stopWatchers();
+          this.safeCloseOnce();
         }
-        if (redeemBtn) {
-          redeemBtn.hidden = false;
-          redeemBtn.style.display = '';
+        
+        if (document.cookie.indexOf('avOfferWallRewarded=true') !== -1 ||
+            document.cookie.indexOf('avInterstitialViewed=true') !== -1) {
+          console.log('✅ Cookie de recompensa detectado');
+          this.stopWatchers();
+          this.safeCloseOnce();
+        }
+      }, 300);
+      
+      this.pollTimeout = setTimeout(() => {
+        console.warn('⏱️ Timeout de watchers atingido (90s)');
+        this.stopWatchers();
+      }, 90000);
+      
+      this.attachGPTListeners(0);
+    },
+
+    stopWatchers: function() {
+      console.log('🛑 Parando watchers...');
+      
+      if (this.pollId) {
+        clearInterval(this.pollId);
+        this.pollId = null;
+      }
+      
+      if (this.pollTimeout) {
+        clearTimeout(this.pollTimeout);
+        this.pollTimeout = null;
+      }
+      
+      if (this.mutationObserver) {
+        try {
+          this.mutationObserver.disconnect();
+        } catch(e) {}
+        this.mutationObserver = null;
+      }
+      
+      if (this.fallbackTimer) {
+        clearTimeout(this.fallbackTimer);
+        this.fallbackTimer = null;
+      }
+    },
+
+    attachEvents: function() {
+      const closeButton = this.modalElement.querySelector('.dexx-modal-close');
+      closeButton.addEventListener('click', () => this.closeModal());
+
+      this.modalElement.addEventListener('click', (e) => {
+        if (e.target === this.modalElement) {
+          this.closeModal();
+        }
+      });
+
+      const handleEscape = (e) => {
+        if (e.key === 'Escape' && this.modalElement) {
+          this.closeModal();
+          document.removeEventListener('keydown', handleEscape);
         }
       };
+      document.addEventListener('keydown', handleEscape);
 
-      wheelEl.addEventListener('transitionend', onEnd);
-    }
+      this.attachButtonEvents();
+    },
 
-    if (spinBtn) {
-      spinBtn.addEventListener('click', spin);
-    } else {
-      window.addEventListener('qo_open', function (ev) {
-        if (ev && ev.detail && ev.detail.id && ev.detail.id !== id) return;
-        spin();
+    handleResponse: function(response) {
+      console.log(`Resposta - Step ${this.currentStep}:`, response);
+      
+      this.answers[`step${this.currentStep}`] = response;
+
+      const event = new CustomEvent('dexxPluginResponse', {
+        detail: { 
+          step: this.currentStep,
+          response: response,
+          allAnswers: this.answers
+        }
       });
-    }
+      window.dispatchEvent(event);
 
-    if (redeemBtn && !redeemBtn.__qoRedeemBound) {
-      redeemBtn.addEventListener('click', function(ev) {
-        ev.preventDefault();
-        var label = prizeEl ? prizeEl.textContent.trim() : (redeemBtn.getAttribute('data-qo-label') || wheelPrizeLabel || '');
-        selectOption(label.trim(), 0);
-      });
-      redeemBtn.__qoRedeemBound = true;
+      if (this.currentStep < this.questions.length) {
+        this.currentStep++;
+        this.updateModalContent();
+      } else {
+        this.currentStep++;
+        this.updateModalContent();
+      }
+    },
+
+    closeModal: function() {
+      if (this.modalElement) {
+        this.stopWatchers();
+        
+        if (this.modalElement.parentNode) {
+          this.modalElement.parentNode.removeChild(this.modalElement);
+        }
+        this.modalElement = null;
+        this.currentStep = 1;
+        this.answers = {};
+        this.closedOnce = false;
+        this.offerwallSeen = false;
+      }
+    },
+
+    openModal: function() {
+      if (this.modalElement) {
+        console.warn('Modal já está aberto');
+        return;
+      }
+
+      this.currentStep = 1;
+      this.answers = {};
+      this.modalElement = this.createModal();
+      document.body.appendChild(this.modalElement);
+      this.attachEvents();
+    },
+
+    init: function() {
+      if (this.initialized) {
+        console.warn('Plugin já foi inicializado');
+        return;
+      }
+
+      this.initialized = true;
+      this.injectStyles();
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          setTimeout(() => this.openModal(), 1000);
+        });
+      } else {
+        setTimeout(() => this.openModal(), 1000);
+      }
     }
-  }
+  };
+
+  window.DexxPlugin = DexxPlugin;
+  DexxPlugin.init();
+
+  window.addEventListener('dexxPrizeClick', function(e) {
+    console.log('🎁 Evento dexxPrizeClick capturado:', e.detail);
+    console.log('📊 Respostas do usuário:', e.detail.answers);
+  });
+
+  window.addEventListener('dexxPluginResponse', function(e) {
+    console.log('📝 Resposta capturada - Step:', e.detail.step, 'Resposta:', e.detail.response);
+  });
+
 })();
