@@ -310,7 +310,7 @@
           </p>
           v2.3
           <div class="dexx-modal-options">
-            <a href
+            <a href="#"
                class="dexx-modal-prize-link av-rewarded" 
                data-av-rewarded="true" 
                data-google-rewarded="true" 
