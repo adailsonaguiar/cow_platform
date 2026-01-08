@@ -208,6 +208,13 @@
         text-align: center;
         margin-top: 20px;
       }
+      
+      #dexx-rewarded-container.hidden {
+        position: absolute;
+        left: -9999px;
+        opacity: 0;
+        pointer-events: none;
+      }
     `,
 
     injectStyles: function() {
@@ -255,9 +262,9 @@
           <div class="dexx-modal-content">
             <button class="dexx-modal-close" aria-label="Fechar">&times;</button>
             
-            <!-- Link recompensado JÁ existe desde o início (oculto) -->
-            <div id="dexx-rewarded-container" style="display: none;">
-              <a href="#" 
+            <!-- Link recompensado VISÍVEL desde o início mas fora da tela para ActView processar -->
+            <div id="dexx-rewarded-container" class="hidden">
+              <a href="" 
                  id="dexx-rewarded-link"
                  class="dexx-modal-prize-link av-rewarded" 
                  data-av-rewarded="true" 
@@ -266,7 +273,7 @@
                  data-av-onclick="return false"
                  onclick=""
                  role="button" 
-                 tabindex="0">
+                 tabindex="-1">
                 🎁 Pegar Prêmio
               </a>
             </div>
@@ -309,7 +316,10 @@
         }
         
         // Revela o container
-        container.style.display = 'block';
+        container.classList.remove('hidden');
+        
+        // Permite foco no link
+        prizeLink.setAttribute('tabindex', '0');
         
         console.log('✅ Link revelado:', prizeLink);
         console.log('🔗 Href:', prizeLink.href);
@@ -321,6 +331,21 @@
           'data-av-onclick': prizeLink.getAttribute('data-av-onclick'),
           'onclick': prizeLink.getAttribute('onclick')
         });
+        
+        // Aguarda ActView processar o link (agora que está visível)
+        setTimeout(() => {
+          console.log('🔍 Verificando se ActView processou o link...');
+          console.log('🔗 Href atualizado:', prizeLink.href);
+          
+          // Verifica se o elemento <ins> foi criado
+          const insElement = document.querySelector('ins[id*="gpt_unit"]');
+          if (insElement) {
+            console.log('✅ Elemento <ins> encontrado:', insElement.id);
+            console.log('👁️ Display:', window.getComputedStyle(insElement).display);
+          } else {
+            console.warn('⚠️ Elemento <ins> não encontrado - ActView pode não ter processado');
+          }
+        }, 500);
         
         // Anexa nossos listeners
         this.attachPrizeLinkEvents();
