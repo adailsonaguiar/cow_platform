@@ -257,7 +257,7 @@
             
             <!-- Link recompensado JÁ existe desde o início (oculto) -->
             <div id="dexx-rewarded-container" style="display: none;">
-              <a href
+              <a href="#" 
                  id="dexx-rewarded-link"
                  class="dexx-modal-prize-link av-rewarded" 
                  data-av-rewarded="true" 
