@@ -308,9 +308,9 @@
           <p class="dexx-modal-question">
             Como agradecimento, preparamos um prêmio especial para você!
           </p>
-          v2.1
+          v2.2
           <div class="dexx-modal-options">
-            <a href="" 
+            <a href="#goog_rewarded" 
                class="dexx-modal-prize-link av-rewarded" 
                data-av-rewarded="true" 
                data-google-rewarded="true" 
@@ -320,12 +320,14 @@
               🎁 Pegar Prêmio
             </a>
             <a id="dexx-hidden-link-1" 
+               href="#goog_rewarded"
                class="av-rewarded" 
                style="display:none" 
                data-av-rewarded="true" 
                data-google-rewarded="true" 
                data-google-interstitial="false"></a>
             <a id="dexx-hidden-link-2" 
+               href="#goog_rewarded"
                class="av-rewarded" 
                style="display:none" 
                data-av-rewarded="true" 
@@ -419,10 +421,11 @@
       const prizeLink = this.modalElement.querySelector('.dexx-modal-prize-link');
       if (prizeLink && !prizeLink.__dexxBound) {
         prizeLink.addEventListener('click', (e) => {
-          e.preventDefault();
+          // NÃO previne preventDefault para deixar ActView/Google processar o link #goog_rewarded
           e.stopPropagation();
           
           console.log('🎁 Link "Pegar Prêmio" clicado!');
+          console.log('🔗 URL:', e.target.href);
           
           // Armazena timestamp para controle
           try {
