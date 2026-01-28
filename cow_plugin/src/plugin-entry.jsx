@@ -124,6 +124,12 @@ function unmount() {
 }
 
 api.openModal = () => {
+  // 🔑 Verifica se já viu anúncio rewarded (hash na URL)
+  if (window.location.hash.includes('goog_rewarded')) {
+    console.log('🚫 Modal bloqueado: #goog_rewarded encontrado na URL')
+    return
+  }
+  
   mount()
   setTimeout(() => {
     const ev = new CustomEvent('dexxPluginReady')
@@ -132,7 +138,17 @@ api.openModal = () => {
   /* actual opening handled inside PluginApp via api */
 }
 api.closeModal = unmount
-api.init = () => { mount(); /* abre automaticamente após 1s para replicar comportamento */ setTimeout(() => api.openModal(), 1000) }
+api.init = () => {
+  // 🔑 Verifica se já viu anúncio rewarded antes de inicializar
+  if (window.location.hash.includes('goog_rewarded')) {
+    console.log('🚫 Inicialização bloqueada: #goog_rewarded encontrado na URL')
+    return
+  }
+  
+  mount()
+  /* abre automaticamente após 1s para replicar comportamento */
+  setTimeout(() => api.openModal(), 1000)
+}
 
 window.DexxPlugin = api
 // inicia automaticamente como plugin.js

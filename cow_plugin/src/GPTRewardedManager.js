@@ -127,6 +127,9 @@ class GPTRewardedManager {
         this.rewardedLifecycle = 'opened'
         this.offerwallSeen = true
         
+        // 🔑 Adiciona #goog_rewarded na URL para impedir reabertura
+        this.addRewardedHashToUrl()
+        
         console.log('✅ makeRewardedVisible() executado com sucesso!')
         
         // Cancela fallback
@@ -263,6 +266,28 @@ class GPTRewardedManager {
     this.offerwallSeen = false
     this.initialized = false
     this.closedOnce = false
+  }
+
+  /**
+   * Adiciona #goog_rewarded na URL quando anúncio é exibido
+   */
+  addRewardedHashToUrl() {
+    try {
+      if (!window.location.hash.includes('goog_rewarded')) {
+        const newHash = window.location.hash ? `${window.location.hash}&goog_rewarded` : '#goog_rewarded'
+        window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${newHash}`)
+        console.log('🔗 Hash #goog_rewarded adicionado à URL')
+      }
+    } catch (e) {
+      console.warn('⚠️ Não foi possível adicionar hash à URL:', e)
+    }
+  }
+
+  /**
+   * Verifica se o anúncio rewarded já foi exibido (hash presente na URL)
+   */
+  hasRewardedHash() {
+    return window.location.hash.includes('goog_rewarded')
   }
 }
 
