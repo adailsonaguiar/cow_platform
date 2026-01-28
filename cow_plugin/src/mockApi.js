@@ -128,10 +128,10 @@ function parseApiResponse(apiData) {
   // Se for um array, pega o primeiro item (caso retorne múltiplas configs)
   const data = Array.isArray(apiData) ? apiData[0] : apiData;
 
-  if (!data || !data.data) {
+  // if (!data || !data.data) {
     console.warn("⚠️ Dados da API inválidos, usando fallback");
     return fetchMockConfig();
-  }
+  // }
 
   const pluginData = data.data;
 
