@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: cow_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: cow_platform
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - cow_network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  cow_network:
+    driver: bridge

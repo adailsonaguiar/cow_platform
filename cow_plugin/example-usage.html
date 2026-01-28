@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exemplo de Uso - Plugin React com Rewarded Ads</title>
+  
+  <!-- 🔑 PASSO 1: Carregar Google Publisher Tag (GPT) -->
+  <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+  
+  <!-- 🔑 PASSO 2: Carregar script de anúncios do JobsMind -->
+  <script src="../jobsmind,js"></script>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+    }
+    
+    .site-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .site-content {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .footer {
+      background: #333;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <h1>🚀 Meu Site Incrível</h1>
+    <p>Exemplo de integração do Plugin React com Rewarded Ads</p>
+  </header>
+  
+  <main class="site-content">
+    <div class="card">
+      <h2>📋 Como funciona</h2>
+      <p>Este site demonstra como integrar o plugin React com anúncios rewarded:</p>
+      <ol>
+        <li>O plugin abre automaticamente após 1 segundo</li>
+        <li>Usuário responde às perguntas ou gira a roleta</li>
+        <li>Ao clicar em "Pegar Prêmio", um vídeo de anúncio aparece</li>
+        <li>Após assistir ao anúncio, o modal fecha e o usuário pode continuar navegando</li>
+      </ol>
+    </div>
+    
+    <div class="card">
+      <h2>🎯 Conteúdo do Site</h2>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+    </div>
+    
+    <div class="card">
+      <h2>✨ Mais Conteúdo</h2>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+      <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    </div>
+  </main>
+  
+  <footer class="footer">
+    <p>&copy; 2024 Meu Site. Todos os direitos reservados.</p>
+  </footer>
+
+  <!-- 🔑 PASSO 3: Container para o plugin React -->
+  <div id="root"></div>
+  
+  <!-- 🔑 PASSO 4: Carregar o script do plugin React compilado -->
+  <!-- Ajuste o caminho conforme sua estrutura de diretórios -->
+  <script type="module" src="dist/assets/index.js"></script>
+  
+  <!-- 🔑 PASSO 5 (Opcional): Listeners para eventos customizados -->
+  <script>
+    // Captura quando usuário clica em "Pegar Prêmio"
+    window.addEventListener('dexxPrizeClick', function(e) {
+      console.log('🎁 Usuário clicou em Pegar Prêmio:', e.detail);
+      
+      // Você pode fazer algo aqui, como:
+      // - Enviar evento para analytics
+      // - Salvar no banco de dados
+      // - Mostrar mensagem personalizada
+      
+      // Exemplo: Google Analytics
+      // gtag('event', 'prize_click', {
+      //   'event_category': 'engagement',
+      //   'event_label': 'plugin_modal'
+      // });
+    });
+    
+    // Captura respostas do formulário
+    window.addEventListener('dexxPluginResponse', function(e) {
+      console.log('📝 Resposta do usuário:', {
+        step: e.detail.step,
+        response: e.detail.response,
+        allAnswers: e.detail.allAnswers
+      });
+      
+      // Você pode salvar as respostas, por exemplo:
+      // fetch('/api/save-survey', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(e.detail)
+      // });
+    });
+    
+    // Verifica se plugin está disponível
+    window.addEventListener('load', function() {
+      if (window.DexxPlugin) {
+        console.log('✅ Plugin carregado com sucesso');
+        
+        // Você pode controlar o plugin programaticamente:
+        // window.DexxPlugin.openModal() - Abre o modal
+        // window.DexxPlugin.closeModal() - Fecha o modal
+      }
+    });
+  </script>
+</body>
+</html>

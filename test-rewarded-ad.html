@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Plugin com Anúncio Recompensado</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .console-log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .console-log .log-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .console-log .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .console-log .log-success { color: #4ec9b0; }
+        .console-log .log-info { color: #9cdcfe; }
+        .console-log .log-warning { color: #dcdcaa; }
+        .console-log .log-error { color: #f48771; }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            background: #667eea;
+            color: white;
+            margin: 10px 5px;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        .status.ready {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status.waiting {
+            background: #FFC107;
+            color: #333;
+        }
+
+        .ad-container {
+            background: #f5f5f5;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .ad-container.active {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+        }
+
+        /* Simulação de Offerwall */
+        #av-offerwall__wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #av-offerwall__modal {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        #av-offerwall__modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #av-offerwall__modal p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        #av-offerwall__modal button {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Teste de Anúncio Recompensado</h1>
+        
+        <div class="info-box">
+            <p><strong>🔍 Como funciona:</strong></p>
+            <ol style="margin-left: 20px; margin-top: 10px;">
+                <li>Responda as duas perguntas do quiz</li>
+                <li>Clique em "🎁 Pegar Prêmio" na tela final</li>
+                <li>Um anúncio simulado (offerwall) aparecerá</li>
+                <li>Feche o anúncio e o modal será fechado automaticamente</li>
+            </ol>
+        </div>
+
+        <div>
+            <span class="status ready">✅ Plugin Carregado</span>
+            <span class="status waiting" id="ad-status">⏳ Aguardando interação</span>
+        </div>
+
+        <div class="ad-container" id="ad-placeholder">
+            <div>
+                <h3>📺 Espaço para Anúncio</h3>
+                <p>O anúncio aparecerá aqui quando você clicar em "Pegar Prêmio"</p>
+            </div>
+        </div>
+
+        <div>
+            <button onclick="DexxPlugin.openModal()">🔄 Reabrir Modal</button>
+            <button onclick="simulateOfferwall()">🎬 Simular Offerwall</button>
+            <button onclick="clearConsole()">🗑️ Limpar Console</button>
+        </div>
+
+        <h3 style="margin-top: 30px;">📊 Console de Eventos:</h3>
+        <div class="console-log" id="console"></div>
+    </div>
+
+    <!-- Script do Plugin -->
+    <script src="plugin.js"></script>
+
+    <!-- Scripts de Teste -->
+    <script>
+        const consoleEl = document.getElementById('console');
+        const adStatusEl = document.getElementById('ad-status');
+        const adPlaceholder = document.getElementById('ad-placeholder');
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logItem = document.createElement('div');
+            logItem.className = `log-item log-${type}`;
+            logItem.textContent = `[${timestamp}] ${message}`;
+            consoleEl.insertBefore(logItem, consoleEl.firstChild);
+        }
+
+        function clearConsole() {
+            consoleEl.innerHTML = '';
+            addLog('Console limpo', 'info');
+        }
+
+        function simulateOfferwall() {
+            addLog('🎬 Simulando offerwall manualmente...', 'info');
+            showOfferwall();
+        }
+
+        function showOfferwall() {
+            const wrapper = document.createElement('div');
+            wrapper.id = 'av-offerwall__wrapper';
+            wrapper.innerHTML = `
+                <div id="av-offerwall__modal">
+                    <h2>🎁 Seu Prêmio Está Aqui!</h2>
+                    <p>Parabéns! Você ganhou um cupom de desconto de 20%</p>
+                    <p style="font-size: 24px; font-weight: bold; color: #667eea; margin: 20px 0;">
+                        DEXX20OFF
+                    </p>
+                    <button onclick="closeOfferwall()">Resgatar e Fechar</button>
+                </div>
+            `;
+            document.body.appendChild(wrapper);
+            
+            adPlaceholder.classList.add('active');
+            adPlaceholder.innerHTML = '<h3>✅ Anúncio Ativo</h3><p>O offerwall está sendo exibido</p>';
+            adStatusEl.textContent = '🎬 Anúncio Exibindo';
+            adStatusEl.className = 'status ready';
+            
+            addLog('✅ Offerwall criado e exibido', 'success');
+        }
+
+        function closeOfferwall() {
+            const wrapper = document.getElementById('av-offerwall__wrapper');
+            if (wrapper) {
+                // Define cookie de recompensa
+                document.cookie = 'avOfferWallRewarded=true; path=/; max-age=3600';
+                
+                wrapper.remove();
+                addLog('✅ Offerwall fechado e cookie definido', 'success');
+                
+                adPlaceholder.classList.remove('active');
+                adPlaceholder.innerHTML = '<h3>✔️ Anúncio Concluído</h3><p>Recompensa entregue com sucesso</p>';
+                adStatusEl.textContent = '✔️ Recompensa Entregue';
+                adStatusEl.className = 'status ready';
+            }
+        }
+
+        // Expõe função globalmente para o botão do offerwall
+        window.closeOfferwall = closeOfferwall;
+
+        // Listeners de eventos
+        window.addEventListener('dexxPluginResponse', function(e) {
+            addLog(`📝 Resposta ${e.detail.step}: ${e.detail.response}`, 'info');
+        });
+
+        window.addEventListener('dexxPrizeClick', function(e) {
+            addLog('🎁 Usuário clicou em "Pegar Prêmio"', 'success');
+            addLog(`📊 Respostas: Step1=${e.detail.answers.step1}, Step2=${e.detail.answers.step2}`, 'info');
+            
+            adStatusEl.textContent = '⏳ Carregando anúncio...';
+            adStatusEl.className = 'status waiting';
+            
+            // Simula carregamento do anúncio após 1 segundo
+            setTimeout(() => {
+                showOfferwall();
+            }, 1000);
+        });
+
+        window.addEventListener('qo_open', function() {
+            addLog('📂 Modal aberto', 'info');
+        });
+
+        window.addEventListener('qo_close', function() {
+            addLog('📪 Modal fechado', 'warning');
+            adStatusEl.textContent = '⏳ Aguardando interação';
+            adStatusEl.className = 'status waiting';
+        });
+
+        // Log inicial
+        addLog('🚀 Sistema inicializado', 'success');
+        addLog('✅ Plugin carregado e pronto', 'success');
+        addLog('⏳ Aguardando usuário responder o quiz...', 'info');
+
+        // Monitora console.log do plugin
+        const originalLog = console.log;
+        console.log = function(...args) {
+            const message = args.join(' ');
+            if (message.includes('🎁') || message.includes('👀') || message.includes('✅') || 
+                message.includes('⚠️') || message.includes('🛑') || message.includes('📊')) {
+                addLog(message, 'info');
+            }
+            originalLog.apply(console, args);
+        };
+
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            const message = args.join(' ');
+            addLog(message, 'warning');
+            originalWarn.apply(console, args);
+        };
+    </script>
+</body>
+</html>

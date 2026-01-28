@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste Plugin React - Rewarded Ads</title>
+  
+  <!-- Google Publisher Tag (GPT) -->
+  <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+  
+  <!-- JobsMind Ad Script -->
+  <script src="jobsmind,js"></script>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .test-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    
+    .info {
+      background: #f0f7ff;
+      border-left: 4px solid #4ECDC4;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    
+    .console-log {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 20px 0;
+    }
+    
+    .log-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-radius: 3px;
+    }
+    
+    .log-success { color: #4CAF50; }
+    .log-error { color: #f44336; }
+    .log-warning { color: #FFA500; }
+    .log-info { color: #2196F3; }
+    
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px 10px 10px 0;
+    }
+    
+    button:hover {
+      background: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🧪 Teste do Plugin React - Rewarded Ads</h1>
+    
+    <div class="info">
+      <strong>ℹ️ Instruções:</strong>
+      <ol>
+        <li>Aguarde o plugin React abrir automaticamente após 1 segundo</li>
+        <li>Responda às perguntas do formulário (ou gire a roleta)</li>
+        <li>Clique no botão "🎁 Pegar Prêmio"</li>
+        <li>Verifique se o vídeo de anúncio (rewarded ad) aparece</li>
+        <li>Assista ao vídeo completamente para ganhar a recompensa</li>
+      </ol>
+    </div>
+    
+    <div>
+      <h3>📋 Logs do Console:</h3>
+      <div id="console-log" class="console-log">
+        <div class="log-info">Aguardando eventos...</div>
+      </div>
+    </div>
+    
+    <div>
+      <button onclick="forceOpenModal()">🔄 Reabrir Plugin</button>
+      <button onclick="clearLogs()">🗑️ Limpar Logs</button>
+    </div>
+  </div>
+
+  <!-- Root do React -->
+  <div id="root"></div>
+  
+  <!-- Script compilado do plugin React -->
+  <script type="module" src="/cow_plugin/dist/assets/index.js"></script>
+  
+  <script>
+    // Intercepta console.log para exibir na página
+    const consoleLogDiv = document.getElementById('console-log');
+    
+    function addLog(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      consoleLogDiv.appendChild(entry);
+      consoleLogDiv.scrollTop = consoleLogDiv.scrollHeight;
+    }
+    
+    // Override console methods
+    const originalLog = console.log;
+    const originalError = console.error;
+    const originalWarn = console.warn;
+    
+    console.log = function(...args) {
+      const message = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+      ).join(' ');
+      
+      if (message.includes('✅') || message.includes('🎬') || message.includes('🎁')) {
+        addLog(message, 'success');
+      } else if (message.includes('📦') || message.includes('📋') || message.includes('📝')) {
+        addLog(message, 'info');
+      } else {
+        addLog(message, 'info');
+      }
+      
+      originalLog.apply(console, args);
+    };
+    
+    console.error = function(...args) {
+      const message = args.join(' ');
+      addLog('❌ ' + message, 'error');
+      originalError.apply(console, args);
+    };
+    
+    console.warn = function(...args) {
+      const message = args.join(' ');
+      addLog('⚠️ ' + message, 'warning');
+      originalWarn.apply(console, args);
+    };
+    
+    // Captura eventos customizados
+    window.addEventListener('dexxPrizeClick', function(e) {
+      addLog('🎁 Evento dexxPrizeClick capturado: ' + JSON.stringify(e.detail), 'success');
+    });
+    
+    window.addEventListener('dexxPluginResponse', function(e) {
+      addLog('📝 Resposta capturada - Step: ' + e.detail.step + ' Resposta: ' + e.detail.response, 'info');
+    });
+    
+    // Verifica se GPT está disponível
+    function checkGPT() {
+      if (window.googletag && googletag.apiReady) {
+        addLog('✅ Google Publisher Tag (GPT) está disponível', 'success');
+      } else {
+        addLog('⚠️ Google Publisher Tag (GPT) não está disponível ainda', 'warning');
+        setTimeout(checkGPT, 1000);
+      }
+    }
+    
+    checkGPT();
+    
+    // Função para forçar abertura do plugin
+    function forceOpenModal() {
+      if (window.DexxPlugin && window.DexxPlugin.openModal) {
+        addLog('🔄 Reabrindo plugin...', 'info');
+        window.DexxPlugin.openModal();
+      } else {
+        addLog('❌ Plugin não está disponível', 'error');
+      }
+    }
+    
+    // Limpar logs
+    function clearLogs() {
+      consoleLogDiv.innerHTML = '<div class="log-info">Logs limpos. Aguardando eventos...</div>';
+    }
+    
+    // Log inicial
+    addLog('🚀 Página carregada. Aguardando plugin abrir...', 'info');
+  </script>
+</body>
+</html>
