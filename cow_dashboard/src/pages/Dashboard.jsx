@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Filter, RefreshCw, Boxes } from 'lucide-react';
+import { Plus, Search, Filter, RefreshCw, Boxes, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import {
@@ -15,7 +15,7 @@ import { cowService } from '@/services/api';
 import { toast } from '@/components/ui/Toast';
 import { BLOCK_TYPES } from '../utils/helpers';
 
-export function Dashboard() {
+export function Dashboard({ user, onLogout }) {
   const [blocks, setBlocks] = useState([]);
   const [filteredBlocks, setFilteredBlocks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -158,10 +158,23 @@ export function Dashboard() {
                 </p>
               </div>
             </div>
-            <Button onClick={() => setIsFormOpen(true)} size="default">
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Bloco
-            </Button>
+            <div className="flex items-center gap-3">
+              {/* Info do usuário */}
+              {user && (
+                <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg bg-muted">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">{user.name}</span>
+                </div>
+              )}
+              <Button onClick={() => setIsFormOpen(true)} size="default">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Bloco
+              </Button>
+              <Button variant="outline" size="default" onClick={onLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </div>
           </div>
         </div>
       </header>
