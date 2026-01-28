@@ -46,3 +46,21 @@ body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica
 .dexx-modal-question{margin:0 0 30px 0;font-size:16px;color:#666}
 .dexx-modal-buttons{display:flex;gap:12px;justify-content:flex-end}
 .dexx-modal-button{padding:12px 24px;border:none;border-radius:6px;font-size:16px;font-weight:500;cursor:pointer}
+.dexx-modal-button-yes{background:#4CAF50;color:#fff}
+.dexx-modal-button-no{background:#f44336;color:#fff}
+.dexx-modal-prize-link{display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:16px 32px;border-radius:8px;text-decoration:none;font-size:18px;font-weight:600;margin-top:20px;width:100%;text-align:center}
+.dexx-modal-dynamic-content{position:relative}
+.dexx-modal-step-indicator{ text-align:center;font-size:12px;color:#999;margin-bottom:15px}
+.dexx-modal-step-indicator .step-active{color:#4CAF50;font-weight:bold}
+.dexx-modal-success-icon{text-align:center;font-size:48px;margin-bottom:20px}
+.dexx-modal-answers-summary{background:#f5f5f5;padding:15px;border-radius:6px;margin-bottom:20px;font-size:14px;color:#666}
+.dexx-modal-answers-summary strong{color:#333}
+.dexx-modal-footer{text-align:center;font-size:12px;color:#999;margin-top:20px}
+#dexx-rewarded-container.hidden{position:absolute;left:-9999px;opacity:0;pointer-events:none}
+#dexx-rewarded-container{ text-align:center;margin-top:20px }
+
+.app-root{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:40px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)}
+.demo-panel{background:white;padding:28px;border-radius:12px;max-width:800px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.15)}
+.buttons{margin-top:16px}
+button{cursor:pointer}
+`;function Qd(){if(document.getElementById("dexx-plugin-styles"))return;const e=document.createElement("style");e.id="dexx-plugin-styles",e.textContent=Wd,document.head.appendChild(e)}let cn=null,qe=null;const Ve={openModal:()=>{},closeModal:()=>{},init:()=>{}};function Gd(){const[e,t]=K.useState(!1),n=K.useRef(!1);return K.useEffect(()=>{Ve.openModal=()=>t(!0),Ve.closeModal=()=>t(!1),Ve.init=()=>{n.current||(n.current=!0)}},[]),T.jsx(Hd,{open:e,onClose:()=>t(!1)})}function sc(){cn||(Qd(),qe=document.createElement("div"),qe.id="dexx-react-plugin-root",document.body.appendChild(qe),cn=rc(qe),cn.render(T.jsx(Gd,{})))}function Kd(){if(!document.querySelector('ins[id*="job_rewarded_0"]')){const e=document.createElement("ins");e.id=`gpt_unit_sim_${Date.now()}`,e.style.display="none",e.setAttribute("data-dexx-stub","1"),e.style.setProperty("z-index",String(2147483646),"important"),document.body.appendChild(e)}if(!document.getElementById("av-offerwall__wrapper")){const e=document.createElement("div");e.id="av-offerwall__wrapper",e.style.display="none",document.body.appendChild(e)}}window.addEventListener("dexxPrizeClick",function(){Kd(),setTimeout(()=>{const e=!!document.getElementById("av-offerwall__wrapper")||!!document.getElementById("dexx-offerwall-overlay"),t=document.querySelector("ins[data-dexx-stub]")||document.querySelector('ins[id*="job_rewarded_0"]'),n=t&&window.getComputedStyle(t).display!=="none"&&window.getComputedStyle(t).visibility!=="hidden"&&parseFloat(window.getComputedStyle(t).opacity||"1")>0;if(!e&&!n&&t)try{t.style.setProperty("display","block","important"),t.style.setProperty("visibility","visible","important"),t.style.setProperty("opacity","1","important"),t.style.setProperty("z-index",String(2147483646),"important"),t.innerHTML||(t.innerHTML='<div style="width:1px;height:1px;">&nbsp;</div>')}catch{t.style.display="block"}},800)});function Yd(){var e;if(cn){try{cn.unmount(),(e=qe==null?void 0:qe.parentNode)==null||e.removeChild(qe)}catch{}cn=null,qe=null}}return Ve.openModal=()=>{if(window.location.hash.includes("goog_rewarded")){console.log("🚫 Modal bloqueado: #goog_rewarded encontrado na URL");return}sc(),setTimeout(()=>{const e=new CustomEvent("dexxPluginReady");window.dispatchEvent(e)},0)},Ve.closeModal=Yd,Ve.init=()=>{if(window.location.hash.includes("goog_rewarded")){console.log("🚫 Inicialização bloqueada: #goog_rewarded encontrado na URL");return}sc(),setTimeout(()=>Ve.openModal(),1e3)},window.DexxPlugin=Ve,Ve.init(),Ve}();
