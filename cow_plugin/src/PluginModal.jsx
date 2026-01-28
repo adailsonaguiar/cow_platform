@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { fetchPluginConfig } from './mockApi'
-import FormComponent from './FormComponent'
+import FormComponent from './components/FormComponent'
 import gptManager from './GPTRewardedManager'
 import { SpinWheel } from './components/SpinWheel'
 
