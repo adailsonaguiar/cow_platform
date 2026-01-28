@@ -3,41 +3,84 @@ import React from 'react'
 export default function FormComponent({ questions, step, answers, onAnswer }) {
   if (step > questions.length) {
     return (
-      <>
-        <div className="dexx-modal-success-icon">🎉</div>
-        <h2 className="dexx-modal-title">Obrigado por participar!</h2>
-        <div className="dexx-modal-answers-summary">
-          {questions.map((q, i) => (
-            <p key={q.id}><strong>{q.title}:</strong> {answers[`step${i + 1}`]}</p>
-          ))}
+      <div className="dexx-form-container">
+        <div className="dexx-success-state">
+          <div className="dexx-success-icon-wrapper">
+            <div className="dexx-success-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          <h2 className="dexx-form-title">Obrigado por participar!</h2>
+          <p className="dexx-form-subtitle">Suas respostas foram registradas com sucesso.</p>
+          
+          {/* <div className="dexx-answers-card">
+            <div className="dexx-answers-header">
+              <span className="dexx-answers-label">Resumo das respostas</span>
+            </div>
+            <div className="dexx-answers-list">
+              {questions.map((q, i) => (
+                <div key={q.id} className="dexx-answer-item">
+                  <span className="dexx-answer-question">{q.title}</span>
+                  <span className="dexx-answer-value">{answers[`step${i + 1}`]}</span>
+                </div>
+              ))}
+            </div>
+          </div> */}
+          
+          <div className="dexx-reward-notice">
+            <div className="dexx-reward-icon">🎁</div>
+            <div className="dexx-reward-text">
+              <span className="dexx-reward-title">Prêmio desbloqueado!</span>
+              <span className="dexx-reward-description">Como agradecimento, preparamos algo especial para você.</span>
+            </div>
+          </div>
         </div>
-        <p className="dexx-modal-question">Como agradecimento, preparamos um prêmio especial para você!</p>
-        <div className="dexx-modal-footer">Veja a recomendação patrocinada para continuar</div>
-      </>
+        <div className="dexx-form-footer">
+          <span className="dexx-footer-text">Veja a recomendação patrocinada para continuar</span>
+        </div>
+      </div>
     )
   }
 
   const currentQuestion = questions[step - 1]
   const options = currentQuestion.options || ['Sim', 'Não']
+  const progress = (step / questions.length) * 100
 
   return (
-    <>
-      <div className="dexx-modal-step-indicator">
-        Etapa <span className="step-active">{step}</span> de {questions.length}
+    <div className="dexx-form-container">
+      {/* Progress Header */}
+      <div className="dexx-progress-header">
+        <div className="dexx-step-info">
+          <span className="dexx-step-label">Etapa {step} de {questions.length}</span>
+        </div>
+        <div className="dexx-progress-bar">
+          <div className="dexx-progress-fill" style={{ width: `${progress}%` }} />
+        </div>
       </div>
-      <h2 className="dexx-modal-title">{currentQuestion.title || 'Responda para participar'}</h2>
-      <p className="dexx-modal-question">{currentQuestion.question}</p>
-      <div className="dexx-modal-buttons">
+      
+      {/* Question Content */}
+      <div className="dexx-question-content">
+        <h2 className="dexx-form-title">{currentQuestion.title || 'Responda para participar'}</h2>
+        <p className="dexx-form-question">{currentQuestion.question}</p>
+      </div>
+      
+      {/* Options Grid */}
+      <div className="dexx-options-grid">
         {options.map((option, index) => (
           <button 
             key={index}
-            className={`dexx-modal-button ${index === options.length - 1 ? 'dexx-modal-button-yes' : 'dexx-modal-button-no'}`}
+            className="dexx-option-button"
             onClick={() => onAnswer(option)}
           >
-            {option}
+            <span className="dexx-option-text">{option}</span>
+            <svg className="dexx-option-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
         ))}
       </div>
-    </>
+    </div>
   )
 }
