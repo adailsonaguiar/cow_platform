@@ -17,26 +17,26 @@ export default function FormComponent({ questions, step, answers, onAnswer }) {
     )
   }
 
+  const currentQuestion = questions[step - 1]
+  const options = currentQuestion.options || ['Sim', 'Não']
+
   return (
     <>
       <div className="dexx-modal-step-indicator">
         Etapa <span className="step-active">{step}</span> de {questions.length}
       </div>
-      <h2 className="dexx-modal-title">Responda as perguntas para participar</h2>
-      <p className="dexx-modal-question">{questions[step - 1].question}</p>
+      <h2 className="dexx-modal-title">{currentQuestion.title || 'Responda para participar'}</h2>
+      <p className="dexx-modal-question">{currentQuestion.question}</p>
       <div className="dexx-modal-buttons">
-        <button 
-          className="dexx-modal-button dexx-modal-button-no" 
-          onClick={() => onAnswer('não')}
-        >
-          Não
-        </button>
-        <button 
-          className="dexx-modal-button dexx-modal-button-yes" 
-          onClick={() => onAnswer('sim')}
-        >
-          Sim
-        </button>
+        {options.map((option, index) => (
+          <button 
+            key={index}
+            className={`dexx-modal-button ${index === options.length - 1 ? 'dexx-modal-button-yes' : 'dexx-modal-button-no'}`}
+            onClick={() => onAnswer(option)}
+          >
+            {option}
+          </button>
+        ))}
       </div>
     </>
   )

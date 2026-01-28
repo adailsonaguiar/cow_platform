@@ -12,8 +12,7 @@ export default function App() {
   return (
     <div className="app-root">
       <div className="demo-panel">
-        <h1>🚀 Dexx Plugin - React + Vite</h1>
-        <p>Modal automática após 1s (comportamento similar a plugin.js).</p>
+        <h1>🚀 Cow Plugin - React + Vite</h1>
         <div className="buttons">
           <button onClick={() => setOpen(true)}>Abrir Modal</button>
         </div>
