@@ -55,7 +55,7 @@ export default function PluginModal({ open, onClose }) {
         })
     } else {
       // Restaurar scroll da página e limpar recursos GPT
-      document.body.style.overflow = ''
+      document.body.style.overflow = 'initial'
       gptManager.cleanup()
     }
   }, [open])
@@ -134,6 +134,7 @@ export default function PluginModal({ open, onClose }) {
 
   function handleClose() {
     setVisible(false)
+    document.body.style.overflow = 'initial'
     onClose && onClose()
   }
 

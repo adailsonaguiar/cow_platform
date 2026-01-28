@@ -15,8 +15,11 @@ export const SpinWheel = ({ prizes, onComplete }) => {
   // Se não houver prêmios, mostra mensagem de carregamento
   if (!segments || segments.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px 0' }}>
-        <p>Carregando prêmios...</p>
+      <div className="dexx-spinwheel-container">
+        <div className="dexx-spinwheel-loading">
+          <div className="dexx-spinwheel-loading-spinner" />
+          <p className="dexx-spinwheel-loading-text">Carregando prêmios...</p>
+        </div>
       </div>
     );
   }
@@ -60,86 +63,106 @@ export const SpinWheel = ({ prizes, onComplete }) => {
   };
 
   return (
-    <div className="spin-wheel-container">
-      {/* Title */}
-      <h2 className="spin-wheel-title">Gire a roleta e ganhe prêmios!!</h2>
-      
-      {/* Arrow indicator */}
-      <div className="arrow-container">
-        <div className="arrow-wrapper">
-          <div className="arrow" />
+    <div className="dexx-spinwheel-container">
+      {/* Header */}
+      <div className="dexx-spinwheel-header">
+        <div className="dexx-spinwheel-badge">
+          <span className="dexx-spinwheel-badge-icon">🎰</span>
+          <span className="dexx-spinwheel-badge-text">Roleta de Prêmios</span>
         </div>
+        <h2 className="dexx-spinwheel-title">Gire e ganhe prêmios!</h2>
+        <p className="dexx-spinwheel-subtitle">Tente a sorte e descubra seu prêmio</p>
       </div>
 
-      {/* Wheel container */}
-      <div className="wheel-wrapper">
-        <div
-          ref={wheelRef}
-          className="wheel"
-          style={{ transform: `rotate(${rotation}deg)` }}
-        >
-          <svg viewBox="0 0 100 100" className="wheel-svg">
-            {segments.map((segment, index) => {
-              const startAngle = index * segmentAngle - 90;
-              const endAngle = startAngle + segmentAngle;
-              
-              const startRad = (startAngle * Math.PI) / 180;
-              const endRad = (endAngle * Math.PI) / 180;
-              
-              const x1 = 50 + 50 * Math.cos(startRad);
-              const y1 = 50 + 50 * Math.sin(startRad);
-              const x2 = 50 + 50 * Math.cos(endRad);
-              const y2 = 50 + 50 * Math.sin(endRad);
-              
-              const largeArcFlag = segmentAngle > 180 ? 1 : 0;
-              const pathD = `M 50 50 L ${x1} ${y1} A 50 50 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
-              
-              const midAngle = startAngle + segmentAngle / 2;
-              const midRad = (midAngle * Math.PI) / 180;
-              const textX = 50 + 30 * Math.cos(midRad);
-              const textY = 50 + 30 * Math.sin(midRad);
-              
-              return (
-                <g key={index}>
-                  <path d={pathD} fill={segment.color} stroke="#1a1a2e" strokeWidth="0.5" />
-                  <text
-                    x={textX}
-                    y={textY}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    transform={`rotate(${midAngle}, ${textX}, ${textY})`}
-                    className="segment-text"
-                  >
-                    {segment.label}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-          
-          {/* Center circle */}
-          <div className="center-circle">
-            <div className="center-circle-inner" />
+      {/* Wheel Section */}
+      <div className="dexx-spinwheel-wheel-section">
+        {/* Arrow indicator */}
+        <div className="dexx-spinwheel-arrow-container">
+          <div className="dexx-spinwheel-arrow" />
+        </div>
+
+        {/* Wheel */}
+        <div className="dexx-spinwheel-wheel-wrapper">
+          <div
+            ref={wheelRef}
+            className="dexx-spinwheel-wheel"
+            style={{ transform: `rotate(${rotation}deg)` }}
+          >
+            <svg viewBox="0 0 100 100" className="dexx-spinwheel-svg">
+              {segments.map((segment, index) => {
+                const startAngle = index * segmentAngle - 90;
+                const endAngle = startAngle + segmentAngle;
+                
+                const startRad = (startAngle * Math.PI) / 180;
+                const endRad = (endAngle * Math.PI) / 180;
+                
+                const x1 = 50 + 50 * Math.cos(startRad);
+                const y1 = 50 + 50 * Math.sin(startRad);
+                const x2 = 50 + 50 * Math.cos(endRad);
+                const y2 = 50 + 50 * Math.sin(endRad);
+                
+                const largeArcFlag = segmentAngle > 180 ? 1 : 0;
+                const pathD = `M 50 50 L ${x1} ${y1} A 50 50 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+                
+                const midAngle = startAngle + segmentAngle / 2;
+                const midRad = (midAngle * Math.PI) / 180;
+                const textX = 50 + 30 * Math.cos(midRad);
+                const textY = 50 + 30 * Math.sin(midRad);
+                
+                return (
+                  <g key={index}>
+                    <path d={pathD} fill={segment.color} stroke="var(--dexx-gray-200)" strokeWidth="0.3" />
+                    <text
+                      x={textX}
+                      y={textY}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      transform={`rotate(${midAngle}, ${textX}, ${textY})`}
+                      className="dexx-spinwheel-segment-text"
+                    >
+                      {segment.label}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+            
+            {/* Center circle */}
+            <div className="dexx-spinwheel-center">
+              <div className="dexx-spinwheel-center-inner">
+                {isSpinning ? (
+                  <span className="dexx-spinwheel-center-spinning">⏳</span>
+                ) : (
+                  <span className="dexx-spinwheel-center-icon">🎯</span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Winner display */}
       {winner && (
-        <div className="winner-display">
-          <p className="winner-label">Você ganhou:</p>
-          <p className="winner-prize">{winner}</p>
+        <div className="dexx-spinwheel-winner">
+          <div className="dexx-spinwheel-winner-icon">🎉</div>
+          <p className="dexx-spinwheel-winner-label">Parabéns! Você ganhou:</p>
+          <p className="dexx-spinwheel-winner-prize">{winner}</p>
         </div>
       )}
 
       {/* Spin button */}
       {!isSpinning && !winner && (
-        <button
-          onClick={spin}
-          className="spin-button"
-        >
-          Girar Roleta
+        <button onClick={spin} className="dexx-spinwheel-button">
+          <span className="dexx-spinwheel-button-icon">🎲</span>
+          <span>Girar Roleta</span>
         </button>
+      )}
+
+      {/* Spinning state */}
+      {isSpinning && (
+        <div className="dexx-spinwheel-spinning-text">
+          <span>Girando...</span>
+        </div>
       )}
     </div>
   );
