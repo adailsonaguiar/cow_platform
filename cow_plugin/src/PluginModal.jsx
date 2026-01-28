@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react'
 import { fetchPluginConfig } from './mockApi'
 import FormComponent from './FormComponent'
 import gptManager from './GPTRewardedManager'
-import GPTRewardedManager from './GPTRewardedManager'
 import { SpinWheel } from './components/SpinWheel'
 
 export default function PluginModal({ open, onClose }) {
@@ -17,13 +16,9 @@ export default function PluginModal({ open, onClose }) {
   const prizeRef = useRef(null)
 
   useEffect(() => {
-    // 🔑 Verifica se já viu anúncio rewarded (hash na URL)
-    if (open && GPTRewardedManager.hasRewardedHash()) {
-      console.log('🚫 Modal bloqueado: #goog_rewarded encontrado na URL')
-      setVisible(false)
-      return
-    }
-
+     if (window.location.hash.includes('goog_rewarded')) {
+    return
+  }
     setVisible(open)
     if (open) {
       setStep(1)
