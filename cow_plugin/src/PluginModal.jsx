@@ -11,6 +11,7 @@ export default function PluginModal({ open, onClose }) {
   const [answers, setAnswers] = useState({})
   const [questions, setQuestions] = useState([])
   const [prizes, setPrizes] = useState([])
+  const [preferredItem, setPreferredItem] = useState('')
   const [loading, setLoading] = useState(true)
   const [completed, setCompleted] = useState(false)
   const prizeRef = useRef(null)
@@ -40,12 +41,13 @@ export default function PluginModal({ open, onClose }) {
       // Buscar configuração do plugin da API
       fetchPluginConfig()
         .then(config => {
-          console.log('✅ Configuração do plugin recebida:', config)
+          console.log('✅ Configuração do plugin recebida --============:', config)
           setComponentType(config.type)
           if (config.type === 'quiz') {
             setQuestions(config.questions || [])
           } else if (config.type === 'spinwheel') {
             setPrizes(config.prizes || [])
+            setPreferredItem(config.preferredItem || '')
           }
           setLoading(false)
         })
@@ -157,6 +159,7 @@ export default function PluginModal({ open, onClose }) {
     <SpinWheel 
       onComplete={handleRouletteComplete}
       prizes={prizes}
+      preferredItem={preferredItem}
     />
   ) : null
 

@@ -128,10 +128,10 @@ function parseApiResponse(apiData) {
   // Se for um array, pega o primeiro item (caso retorne múltiplas configs)
   const data = Array.isArray(apiData) ? apiData[0] : apiData;
 
-  // if (!data || !data.data) {
+  if (!data || !data.data) {
     console.warn("⚠️ Dados da API inválidos, usando fallback");
     return fetchMockConfig();
-  // }
+  }
 
   const pluginData = data.data;
 
@@ -150,6 +150,7 @@ function parseApiResponse(apiData) {
     );
   } else if (componentType === "spinwheel" && pluginData.prizes) {
     config.prizes = pluginData.prizes;
+    config.preferredItem = pluginData.preferredItem || '';
   } else {
     console.warn(
       "⚠️ Tipo de componente não reconhecido ou dados faltando, usando fallback",

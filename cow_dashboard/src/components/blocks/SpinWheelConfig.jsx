@@ -1,16 +1,27 @@
 import { useState, useEffect } from 'react';
 import { Input, Label } from '@/components/ui/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Target } from 'lucide-react';
 
 export function SpinWheelConfig({ value = [], onChange }) {
-  const [prizes, setPrizes] = useState(value.length > 0 ? value : [
+  // Check if value is an object with prizes or just an array (backwards compatibility)
+  const initialPrizes = Array.isArray(value) ? value : (value.prizes || [
     { id: 1, label: '', color: '#FF6B6B', value: 0 }
   ]);
+  const initialPreferredItem = Array.isArray(value) ? '' : (value.preferredItem || '');
+
+  const [prizes, setPrizes] = useState(initialPrizes.length > 0 ? initialPrizes : [
+    { id: 1, label: '', color: '#FF6B6B', value: 0 }
+  ]);
+  const [preferredItem, setPreferredItem] = useState(initialPreferredItem);
 
   useEffect(() => {
-    onChange(prizes);
-  }, [prizes]);
+    onChange({
+      prizes,
+      preferredItem
+    });
+  }, [prizes, preferredItem]);
 
   const addPrize = () => {
     const newId = prizes.length > 0 ? Math.max(...prizes.map(p => p.id)) + 1 : 1;
@@ -105,6 +116,35 @@ export function SpinWheelConfig({ value = [], onChange }) {
       <p className="text-xs text-muted-foreground">
         Configure os prêmios da roleta. Cada fatia terá uma cor, label e valor associado.
       </p>
+
+      <div className="space-y-2 pt-4 border-t border-border">
+        <div className="flex items-center gap-2">
+          <Target className="h-4 w-4 text-primary" />
+          <Label htmlFor="preferredItem" className="text-base">Item Preferido (Opcional)</Label>
+        </div>
+        <Select value={preferredItem} onValueChange={setPreferredItem}>
+          <SelectTrigger id="preferredItem">
+            <SelectValue placeholder="Selecione o item preferido..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Nenhum (aleatório)</SelectItem>
+            {prizes.filter(p => p.label.trim() !== '').map((prize) => (
+              <SelectItem key={prize.id} value={prize.label}>
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-4 h-4 rounded-full border border-border" 
+                    style={{ backgroundColor: prize.color }}
+                  />
+                  <span>{prize.label}</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          Selecione qual prêmio deve ser o resultado preferido da roleta. Deixe em "Nenhum" para sorteio aleatório.
+        </p>
+      </div>
     </div>
   );
 }

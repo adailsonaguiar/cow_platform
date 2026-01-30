@@ -1,12 +1,13 @@
 import { useState, useRef } from 'react';
 
-export const SpinWheel = ({ prizes, onComplete }) => {
+export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState(null);
   const wheelRef = useRef(null);
 
   console.log("🎡 SpinWheel prêmios recebidos:", prizes);
+  console.log("🎯 Item preferido recebido:", preferredItem);
 
   // Usa os prizes da API ou array vazio como fallback
   const segments = prizes || [];
@@ -30,13 +31,21 @@ export const SpinWheel = ({ prizes, onComplete }) => {
     setIsSpinning(true);
     setWinner(null);
 
-    // Encontra o índice do "Item surpresa" - busca flexível
-    const surpriseIndex = segments.findIndex(segment => 
-      segment.label.toLowerCase().includes('surpresa')
-    );
+    // Encontra o índice do item preferido
+    let targetIndex = 0;
     
-    // Se não encontrar, usa o primeiro segmento
-    const targetIndex = surpriseIndex !== -1 ? surpriseIndex : 0;
+    if (preferredItem && preferredItem !== 'none' && preferredItem !== '') {
+      // Se há um item preferido definido, procura por ele
+      const preferredIndex = segments.findIndex(segment => 
+        segment.label === preferredItem
+      );
+      targetIndex = preferredIndex !== -1 ? preferredIndex : 0;
+      console.log(`🎯 Usando item preferido: "${preferredItem}" (índice ${targetIndex})`);
+    } else {
+      // Se não há item preferido, escolhe aleatoriamente
+      targetIndex = Math.floor(Math.random() * segments.length);
+      console.log(`🎲 Sem item preferido, escolhendo aleatoriamente: índice ${targetIndex}`);
+    }
     
     const fullRotations = 3 + Math.floor(Math.random() * 3);
     

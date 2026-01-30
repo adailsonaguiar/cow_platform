@@ -59,7 +59,10 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
   const getInitialBlockConfig = (type, data) => {
     switch (type) {
       case 'spinwheel':
-        return data?.prizes || [];
+        return {
+          prizes: data?.prizes || [],
+          preferredItem: data?.preferredItem || ''
+        };
       case 'quiz':
         return data?.questions || [];
       case 'scratch':
@@ -83,7 +86,8 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
 
     switch (formData.type) {
       case 'spinwheel':
-        blockData.prizes = formData.blockConfig || [];
+        blockData.prizes = formData.blockConfig?.prizes || [];
+        blockData.preferredItem = formData.blockConfig?.preferredItem || '';
         break;
       case 'quiz':
         blockData.questions = formData.blockConfig || [];
