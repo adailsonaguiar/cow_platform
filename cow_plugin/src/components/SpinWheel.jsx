@@ -6,9 +6,6 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
   const [winner, setWinner] = useState(null);
   const wheelRef = useRef(null);
 
-  console.log("🎡 SpinWheel prêmios recebidos:", prizes);
-  console.log("🎯 Item preferido recebido:", preferredItem);
-
   // Usa os prizes da API ou array vazio como fallback
   const segments = prizes || [];
   const segmentAngle = segments.length > 0 ? 360 / segments.length : 0;
@@ -40,11 +37,9 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
         segment.label === preferredItem
       );
       targetIndex = preferredIndex !== -1 ? preferredIndex : 0;
-      console.log(`🎯 Usando item preferido: "${preferredItem}" (índice ${targetIndex})`);
     } else {
       // Se não há item preferido, escolhe aleatoriamente
       targetIndex = Math.floor(Math.random() * segments.length);
-      console.log(`🎲 Sem item preferido, escolhendo aleatoriamente: índice ${targetIndex}`);
     }
     
     const fullRotations = 3 + Math.floor(Math.random() * 3);
