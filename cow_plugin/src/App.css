@@ -55,6 +55,12 @@
   gap: 32px;
 }
 
+@media (max-width: 768px) {
+  .news-nav {
+    display: none;
+  }
+}
+
 .news-nav a {
   color: #52525b;
   text-decoration: none;

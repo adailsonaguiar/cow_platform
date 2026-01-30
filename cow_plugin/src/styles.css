@@ -103,6 +103,22 @@ body {
   animation: dexx-modal-enter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@media (max-width: 640px) {
+  .dexx-modal-overlay {
+    padding: var(--dexx-space-2);
+    align-items: center;
+  }
+
+  .dexx-modal-content-wrapper {
+    max-width: 100%;
+    margin-top: 0;
+  }
+
+  .dexx-modal-content {
+    border-radius: var(--dexx-radius-lg);
+  }
+}
+
 @keyframes dexx-modal-enter {
   from {
     opacity: 0;
@@ -600,8 +616,8 @@ button {
 
 .dexx-spinwheel-wheel {
   position: relative;
-  width: 260px;
-  height: 260px;
+  width: 340px;
+  height: 340px;
   border-radius: 50%;
   box-shadow: var(--dexx-shadow-lg), inset 0 0 0 4px var(--dexx-gray-100);
   transition: transform 6s cubic-bezier(0.17, 0.67, 0.12, 0.99);
@@ -612,8 +628,8 @@ button {
 
 @media (min-width: 768px) {
   .dexx-spinwheel-wheel {
-    width: 300px;
-    height: 300px;
+    width: 400px;
+    height: 400px;
   }
 }
 
@@ -623,8 +639,8 @@ button {
 }
 
 .dexx-spinwheel-segment-text {
-  font-size: 3.2px;
-  font-weight: 600;
+  font-size: 4.5px;
+  font-weight: 700;
   fill: white;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
