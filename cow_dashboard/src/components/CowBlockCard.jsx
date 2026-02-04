@@ -17,7 +17,7 @@ export function CowBlockCard({ block, onEdit, onDelete, onDuplicate }) {
               {blockType.icon}
             </div>
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-base truncate">{block.site}</CardTitle>
+              <CardTitle className="text-base truncate">{block.blockName}</CardTitle>
               <CardDescription className="text-xs mt-1">
                 {blockType.label}
               </CardDescription>
@@ -53,13 +53,6 @@ export function CowBlockCard({ block, onEdit, onDelete, onDuplicate }) {
                   <Copy className="h-4 w-4" />
                   Duplicar
                 </DropdownMenu.Item>
-                <DropdownMenu.Item
-                  className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer rounded-md hover:bg-accent outline-none"
-                  onSelect={() => window.open(block.url, '_blank')}
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Abrir URL
-                </DropdownMenu.Item>
                 <DropdownMenu.Separator className="h-px bg-border my-1" />
                 <DropdownMenu.Item
                   className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer rounded-md hover:bg-destructive/10 text-destructive outline-none"
@@ -76,17 +69,6 @@ export function CowBlockCard({ block, onEdit, onDelete, onDuplicate }) {
       
       <CardContent className="space-y-3">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="font-medium text-muted-foreground">URL:</span>
-            <a
-              href={block.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline truncate flex-1"
-            >
-              {block.url}
-            </a>
-          </div>
           
           <div className="flex items-center gap-2 text-xs">
             <span className="font-medium text-muted-foreground">Idioma:</span>
