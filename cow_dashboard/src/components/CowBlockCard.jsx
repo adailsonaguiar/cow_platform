@@ -12,7 +12,7 @@ export function CowBlockCard({ block, onEdit, onDelete, onDuplicate }) {
     <Card className="group hover:border-primary/50 transition-all duration-200">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-1">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary text-2xl">
               {blockType.icon}
             </div>
@@ -24,7 +24,13 @@ export function CowBlockCard({ block, onEdit, onDelete, onDuplicate }) {
             </div>
           </div>
           
-          <DropdownMenu.Root>
+          <div className="flex items-center gap-2">
+            {block.isActive === false && (
+              <div className="flex items-center justify-center px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium whitespace-nowrap">
+                Inativo
+              </div>
+            )}
+            <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <Button
                 variant="ghost"
@@ -64,6 +70,7 @@ export function CowBlockCard({ block, onEdit, onDelete, onDuplicate }) {
               </DropdownMenu.Content>
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
+          </div>
         </div>
       </CardHeader>
       

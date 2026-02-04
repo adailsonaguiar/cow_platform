@@ -16,4 +16,7 @@ export class UpdateCowDto {
   @IsOptional()
   @IsObject({ message: 'Os dados devem ser um objeto' })
   data?: Record<string, any>;
+
+  @IsOptional()
+  active?: boolean;
 }

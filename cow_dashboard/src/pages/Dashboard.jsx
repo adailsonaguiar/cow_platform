@@ -55,8 +55,8 @@ export function Dashboard({ user, onLogout }) {
     if (searchTerm) {
       filtered = filtered.filter(
         (block) =>
-          block.site.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          block.url.toLowerCase().includes(searchTerm.toLowerCase())
+          block.blockName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          block.sites.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -127,7 +127,7 @@ export function Dashboard({ user, onLogout }) {
   };
 
   const handleDuplicateBlock = (block) => {
-    setEditingBlock({ ...block, _id: undefined, site: `${block.site} (cópia)` });
+    setEditingBlock({ ...block, _id: undefined, blockName: `${block.blockName} (cópia)` });
     setIsFormOpen(true);
   };
 
@@ -264,13 +264,19 @@ export function Dashboard({ user, onLogout }) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredBlocks.map((block) => (
-              <CowBlockCard
+              <div
                 key={block._id}
-                block={block}
-                onEdit={handleEditBlock}
-                onDelete={handleDeleteBlock}
-                onDuplicate={handleDuplicateBlock}
-              />
+                className={`transition-opacity duration-200 ${
+                  block.active === false ? 'opacity-50' : 'opacity-100'
+                }`}
+              >
+                <CowBlockCard
+                  block={block}
+                  onEdit={handleEditBlock}
+                  onDelete={handleDeleteBlock}
+                  onDuplicate={handleDuplicateBlock}
+                />
+              </div>
             ))}
           </div>
         )}

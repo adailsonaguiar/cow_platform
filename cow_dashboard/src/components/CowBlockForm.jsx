@@ -30,6 +30,7 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
     sites: '',
     type: undefined,
     language: 'pt-BR',
+    active: true,
     data: {},
     blockConfig: null,
   });
@@ -42,6 +43,7 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
         sites: initialData.sites || '',
         type: initialData.type || '',
         language: initialData.data?.language || 'pt-BR',
+        active: initialData.active !== undefined ? initialData.active : true,
         data: initialData.data || {},
         blockConfig,
       });
@@ -51,6 +53,7 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
         sites: '',
         type: '',
         language: 'pt-BR',
+        active: true,
         data: {},
         blockConfig: null,
       });
@@ -110,6 +113,7 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
       blockName: formData.blockName,
       sites: formData.sites,
       type: formData.type,
+      active: formData.active,
       data: blockData,
     };
     
@@ -258,6 +262,22 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Status Active/Inactive */}
+          <div className="space-y-2">
+            <Label>Status do Bloco</Label>
+            <button
+              type="button"
+              onClick={() => handleChange('active', !formData.active)}
+              className={`w-full py-2 px-4 rounded-lg font-medium transition-all ${
+                formData.active
+                  ? 'bg-green-100 text-green-800 border border-green-300'
+                  : 'bg-red-100 text-red-800 border border-red-300'
+              }`}
+            >
+              {formData.active ? '✓ Bloco Ativo' : '✕ Bloco Inativo'}
+            </button>
           </div>
 
           {/* Block-specific Configuration */}

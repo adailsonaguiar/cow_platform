@@ -16,6 +16,9 @@ export class Cow {
 
   @Prop({ type: Object, required: false })
   data?: Record<string, any>;
+
+  @Prop({ default: true })
+  active: boolean;
 }
 
 export const CowSchema = SchemaFactory.createForClass(Cow);

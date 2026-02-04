@@ -644,10 +644,12 @@ button {
 
 .dexx-spinwheel-segment-text {
   font-size: 5px;
-  font-weight: 700;
+  font-weight: 600;
   fill: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 2px rgba(0, 0, 0, 0.8);
-  letter-spacing: 0.5px;
+  /* text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 2px rgba(0, 0, 0, 0.8); */
+  /* text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); */
+  text-transform: uppercase;
+  letter-spacing: 0.1px;
 }
 
 .dexx-spinwheel-segment-winner path {
@@ -760,22 +762,22 @@ button {
   gap: var(--dexx-space-2);
   margin-top: var(--dexx-space-6);
   padding: var(--dexx-space-4) var(--dexx-space-8);
-  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-  color: #000;
+  background: linear-gradient(135deg, var(--dexx-accent) 0%, var(--dexx-accent-dark) 100%);
+  color: #fff;
   font-size: var(--dexx-font-size-base);
   font-weight: 700;
   border: none;
-  border-radius: var(--dexx-radius-lg);
+  border-radius: var(--dexx-radius-xl);
   cursor: pointer;
   transition: all var(--dexx-transition-base);
-  box-shadow: 0 8px 24px 0 rgba(255, 215, 0, 0.4);
+  box-shadow: 0 8px 24px 0 rgba(124, 58, 237, 0.4);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .dexx-spinwheel-button:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 32px 0 rgba(255, 215, 0, 0.6);
-  background: linear-gradient(135deg, #ffed4e 0%, #fff 100%);
+  box-shadow: 0 12px 32px 0 rgba(124, 58, 237, 0.6);
+  /* background: linear-gradient(135deg, var(--dexx-accent-light) 0%, #fff 100%); */
 }
 
 .dexx-spinwheel-button:active {
