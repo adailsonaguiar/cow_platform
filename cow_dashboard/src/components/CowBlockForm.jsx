@@ -219,7 +219,7 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
 
           {/* Site Name */}
           <div className="space-y-2">
-            <Label htmlFor="site">Nome do Site *</Label>
+            <Label htmlFor="site">Nome do Bloco *</Label>
             <Input
               id="site"
               placeholder="ex: meusite.com"
@@ -227,9 +227,6 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
               onChange={(e) => handleChange('site', e.target.value)}
               required
             />
-            <p className="text-xs text-muted-foreground">
-              Identificador do site onde o bloco será exibido
-            </p>
           </div>
 
           {/* URL */}
