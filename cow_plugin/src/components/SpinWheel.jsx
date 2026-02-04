@@ -4,6 +4,7 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState(null);
+  const [winnerIndex, setWinnerIndex] = useState(null);
   const wheelRef = useRef(null);
 
   // Usa os prizes da API ou array vazio como fallback
@@ -55,6 +56,7 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
       // Força o prêmio a ser o item surpresa
       const winningPrize = segments[targetIndex];
       setWinner(winningPrize.label);
+      setWinnerIndex(targetIndex);
       setIsSpinning(false);
       
       // Notifica o componente pai sobre a conclusão
@@ -113,8 +115,10 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
                 const textX = 50 + 30 * Math.cos(midRad);
                 const textY = 50 + 30 * Math.sin(midRad);
                 
+                const isWinningSegment = winnerIndex === index;
+                
                 return (
-                  <g key={index}>
+                  <g key={index} className={isWinningSegment ? 'dexx-spinwheel-segment-winner' : ''}>
                     <path d={pathD} fill={segment.color} stroke="var(--dexx-gray-200)" strokeWidth="0.3" />
                     <text
                       x={textX}
