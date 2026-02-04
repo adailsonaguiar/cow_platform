@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
-import { Input, Label, Textarea } from '@/components/ui/Input';
+import { Input, Label } from '@/components/ui/Input';
 import {
   Select,
   SelectContent,
@@ -22,11 +22,12 @@ import { QuizConfig } from '@/components/blocks/QuizConfig';
 import { ScratchConfig } from '@/components/blocks/ScratchConfig';
 import { CountdownConfig } from '@/components/blocks/CountdownConfig';
 import { PresenteConfig } from '@/components/blocks/PresenteConfig';
+import { SitesInput } from '@/components/SitesInput';
 
 export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode = 'create' }) {
   const [formData, setFormData] = useState({
-    site: '',
-    url: '',
+    blockName: '',
+    sites: '',
     type: undefined,
     language: 'pt-BR',
     data: {},
@@ -37,8 +38,8 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
     if (initialData) {
       const blockConfig = getInitialBlockConfig(initialData.type, initialData.data);
       setFormData({
-        site: initialData.site || '',
-        url: initialData.url || '',
+        blockName: initialData.blockName || '',
+        sites: initialData.sites || '',
         type: initialData.type || '',
         language: initialData.data?.language || 'pt-BR',
         data: initialData.data || {},
@@ -46,8 +47,8 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
       });
     } else {
       setFormData({
-        site: '',
-        url: '',
+        blockName: '',
+        sites: '',
         type: '',
         language: 'pt-BR',
         data: {},
@@ -106,8 +107,8 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
     }
 
     const submitData = {
-      site: formData.site,
-      url: formData.url,
+      blockName: formData.blockName,
+      sites: formData.sites,
       type: formData.type,
       data: blockData,
     };
@@ -123,7 +124,7 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
   };
 
   const isFormValid = () => {
-    return formData.site && formData.url && formData.type && formData.language;
+    return formData.blockName && formData.sites && formData.type && formData.language;
   };
 
   const handleBlockConfigChange = (config) => {
@@ -219,31 +220,22 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
 
           {/* Site Name */}
           <div className="space-y-2">
-            <Label htmlFor="site">Nome do Bloco *</Label>
+            <Label htmlFor="blockName">Nome do Bloco *</Label>
             <Input
-              id="site"
-              placeholder="ex: meusite.com"
-              value={formData.site}
-              onChange={(e) => handleChange('site', e.target.value)}
+              id="blockName"
+              placeholder="ex: meu bloco interativo"
+              value={formData.blockName}
+              onChange={(e) => handleChange('blockName', e.target.value)}
               required
             />
           </div>
 
           {/* URL */}
-          <div className="space-y-2">
-            <Label htmlFor="url">URL da Página *</Label>
-            <Input
-              id="url"
-              type="url"
-              placeholder="https://exemplo.com/pagina"
-              value={formData.url}
-              onChange={(e) => handleChange('url', e.target.value)}
-              required
-            />
-            <p className="text-xs text-muted-foreground">
-              URL específica onde o bloco será ativado
-            </p>
-          </div>
+          <SitesInput
+            value={formData.sites}
+            onChange={(value) => handleChange('sites', value)}
+            required
+          />
 
           {/* Language Selection */}
           <div className="space-y-2">

@@ -2,12 +2,12 @@ import { IsString, IsOptional, IsObject } from 'class-validator';
 
 export class UpdateCowDto {
   @IsOptional()
-  @IsString({ message: 'O site deve ser uma string' })
-  site?: string;
+  @IsString({ message: 'Os sites devem ser uma string' })
+  sites?: string;
 
   @IsOptional()
-  @IsString({ message: 'A URL deve ser uma string' })
-  url?: string;
+  @IsString({ message: 'O nome do bloco deve ser uma string' })
+  blockName?: string;
 
   @IsOptional()
   @IsString({ message: 'O tipo deve ser uma string' })

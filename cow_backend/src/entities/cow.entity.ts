@@ -6,10 +6,10 @@ export type CowDocument = Cow & Document;
 @Schema({ collection: 'cows', timestamps: true })
 export class Cow {
   @Prop({ required: true })
-  site: string;
+  sites: string;
 
   @Prop({ required: true })
-  url: string;
+  blockName: string;
 
   @Prop({ required: true })
   type: string;

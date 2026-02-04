@@ -1,13 +1,13 @@
 import { IsNotEmpty, IsString, IsOptional, IsObject } from 'class-validator';
 
 export class CreateCowDto {
-  @IsNotEmpty({ message: 'O site é obrigatório' })
-  @IsString({ message: 'O site deve ser uma string' })
-  site: string;
+  @IsNotEmpty({ message: 'Os sites são obrigatórios' })
+  @IsString({ message: 'Os sites devem ser uma string' })
+  sites: string;
 
-  @IsNotEmpty({ message: 'A URL é obrigatória' })
-  @IsString({ message: 'A URL deve ser uma string' })
-  url: string;
+  @IsNotEmpty({ message: 'O nome do bloco é obrigatório' })
+  @IsString({ message: 'O nome do bloco deve ser uma string' })
+  blockName: string;
 
   @IsNotEmpty({ message: 'O tipo é obrigatório' })
   @IsString({ message: 'O tipo deve ser uma string' })
