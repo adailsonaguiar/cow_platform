@@ -47,7 +47,8 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
     
     // Calcula a rotação necessária para parar no segmento alvo
     // A seta aponta para o topo, então precisamos ajustar para que o segmento alvo fique no topo
-    const targetAngle = 360 - (targetIndex * segmentAngle);
+    // Adiciona 0.5 do segmentAngle para parar no meio da fatia, não na borda
+    const targetAngle = 360 - ((targetIndex + 0.5) * segmentAngle);
     const newRotation = rotation + (fullRotations * 360) + targetAngle;
     
     setRotation(newRotation);
@@ -117,6 +118,26 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
                 
                 const isWinningSegment = winnerIndex === index;
                 
+                // Quebra o texto em múltiplas linhas se for muito longo
+                const label = segment.label;
+                const maxCharsPerLine = 10;
+                const words = label.split(' ');
+                let lines = [];
+                let currentLine = '';
+                
+                words.forEach(word => {
+                  if ((currentLine + word).length <= maxCharsPerLine) {
+                    currentLine += (currentLine ? ' ' : '') + word;
+                  } else {
+                    if (currentLine) lines.push(currentLine);
+                    currentLine = word;
+                  }
+                });
+                if (currentLine) lines.push(currentLine);
+                
+                // Se apenas uma linha, manter como está
+                if (lines.length === 1) lines = [label];
+                
                 return (
                   <g key={index} className={isWinningSegment ? 'dexx-spinwheel-segment-winner' : ''}>
                     <path d={pathD} fill={segment.color} stroke="var(--dexx-gray-200)" strokeWidth="0.3" />
@@ -125,10 +146,19 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
                       y={textY}
                       textAnchor="middle"
                       dominantBaseline="middle"
-                      transform={`rotate(${midAngle}, ${textX}, ${textY})`}
+                      transform={`rotate(${midAngle}, ${textX}, ${textY}) rotate(90, ${textX}, ${textY})`}
                       className="dexx-spinwheel-segment-text"
                     >
-                      {segment.label}
+                      {lines.map((line, i) => (
+                        <tspan
+                          key={i}
+                          x={textX}
+                          dy={i === 0 ? 0 : '1.2em'}
+                          textAnchor="middle"
+                        >
+                          {line}
+                        </tspan>
+                      ))}
                     </text>
                   </g>
                 );
