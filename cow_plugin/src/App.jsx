@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import PluginModal from './PluginModal'
 import './App.css'
+import './styles/loading.css'
 
 export default function App() {
   const [open, setOpen] = useState(false)
