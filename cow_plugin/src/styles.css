@@ -603,10 +603,11 @@ button {
 .dexx-spinwheel-arrow {
   width: 0;
   height: 0;
-  border-left: 14px solid transparent;
-  border-right: 14px solid transparent;
-  border-top: 28px solid var(--dexx-accent);
-  filter: drop-shadow(0 2px 4px rgba(124, 58, 237, 0.3));
+  border-left: 16px solid transparent;
+  border-right: 16px solid transparent;
+  border-top: 32px solid #f3f3f3;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  z-index: 11;
 }
 
 /* Wheel Wrapper */
@@ -619,11 +620,14 @@ button {
   width: 340px;
   height: 340px;
   border-radius: 50%;
-  box-shadow: var(--dexx-shadow-lg), inset 0 0 0 4px var(--dexx-gray-100);
+  box-shadow: 
+    0 20px 60px 0 rgba(0, 0, 0, 0.3),
+    inset 0 0 0 8px rgba(255, 255, 255, 0.8),
+    inset 0 0 20px 0 rgba(0, 0, 0, 0.2);
   transition: transform 6s cubic-bezier(0.17, 0.67, 0.12, 0.99);
   overflow: hidden;
-  border: 4px solid var(--dexx-white);
-  outline: 2px solid var(--dexx-gray-200);
+  border: 8px solid #fff;
+  outline: 4px solid #f3f3f3;
 }
 
 @media (min-width: 768px) {
@@ -642,27 +646,29 @@ button {
   font-size: 5px;
   font-weight: 700;
   fill: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 2px rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.5px;
 }
 
 .dexx-spinwheel-segment-winner path {
   animation: dexx-segment-pulse 1.2s ease-out infinite;
-  stroke-width: 0.8 !important;
+  stroke-width: 1.2 !important;
   stroke: #fff !important;
+  filter: brightness(1.15);
 }
 
 @keyframes dexx-segment-pulse {
   0% {
-    filter: drop-shadow(0 0 0 rgba(124, 58, 237, 0)) drop-shadow(0 0 0 rgba(124, 58, 237, 0));
-    stroke-width: 0.8px;
-  }
-  50% {
-    filter: drop-shadow(0 0 6px #fff) drop-shadow(0 0 12px #fff);
+    filter: drop-shadow(0 0 0 rgba(255, 215, 0, 0)) brightness(1.15);
     stroke-width: 1.2px;
   }
+  50% {
+    filter: drop-shadow(0 0 8px #f0f3f3) drop-shadow(0 0 16px #f0f3f3) brightness(1.25);
+    stroke-width: 1.6px;
+  }
   100% {
-    filter: drop-shadow(0 0 0 rgba(124, 58, 237, 0)) drop-shadow(0 0 0 rgba(124, 58, 237, 0));
-    stroke-width: 0.8px;
+    filter: drop-shadow(0 0 0 rgba(255, 215, 0, 0)) brightness(1.15);
+    stroke-width: 1.2px;
   }
 }
 
@@ -672,25 +678,30 @@ button {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background: var(--dexx-white);
-  box-shadow: var(--dexx-shadow-md);
+  background: linear-gradient(135deg, #f3f3f3 0%, #f3f3f3 100%);
+  box-shadow: 
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    inset -2px -2px 8px rgba(0, 0, 0, 0.2),
+    inset 2px 2px 8px rgba(255, 255, 255, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid var(--dexx-gray-200);
+  border: 4px solid #fff;
+  outline: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 .dexx-spinwheel-center-inner {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: var(--dexx-gray-50);
+  background: linear-gradient(135deg, #f3f3f3 0%, #f3f3f3 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .dexx-spinwheel-center-icon,
@@ -749,24 +760,26 @@ button {
   gap: var(--dexx-space-2);
   margin-top: var(--dexx-space-6);
   padding: var(--dexx-space-4) var(--dexx-space-8);
-  background: linear-gradient(135deg, var(--dexx-accent) 0%, var(--dexx-accent-dark) 100%);
-  color: var(--dexx-white);
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #000;
   font-size: var(--dexx-font-size-base);
-  font-weight: 600;
+  font-weight: 700;
   border: none;
   border-radius: var(--dexx-radius-lg);
   cursor: pointer;
   transition: all var(--dexx-transition-base);
-  box-shadow: 0 4px 14px 0 rgba(124, 58, 237, 0.4);
+  box-shadow: 0 8px 24px 0 rgba(255, 215, 0, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .dexx-spinwheel-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px 0 rgba(124, 58, 237, 0.5);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px 0 rgba(255, 215, 0, 0.6);
+  background: linear-gradient(135deg, #ffed4e 0%, #fff 100%);
 }
 
 .dexx-spinwheel-button:active {
-  transform: translateY(0);
+  transform: translateY(-1px);
 }
 
 .dexx-spinwheel-button-icon {

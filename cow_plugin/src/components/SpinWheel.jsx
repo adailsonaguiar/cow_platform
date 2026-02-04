@@ -96,6 +96,14 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
             style={{ transform: `rotate(${rotation}deg)` }}
           >
             <svg viewBox="0 0 100 100" className="dexx-spinwheel-svg">
+              <defs>
+                {segments.map((segment, index) => (
+                  <radialGradient key={`grad-${index}`} id={`segmentGrad-${index}`}>
+                    <stop offset="0%" stopColor={segment.color} stopOpacity="1" />
+                    <stop offset="100%" stopColor={segment.color} stopOpacity="0.85" />
+                  </radialGradient>
+                ))}
+              </defs>
               {segments.map((segment, index) => {
                 const startAngle = index * segmentAngle - 90;
                 const endAngle = startAngle + segmentAngle;
@@ -140,7 +148,7 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
                 
                 return (
                   <g key={index} className={isWinningSegment ? 'dexx-spinwheel-segment-winner' : ''}>
-                    <path d={pathD} fill={segment.color} stroke="var(--dexx-gray-200)" strokeWidth="0.3" />
+                    <path d={pathD} fill={`url(#segmentGrad-${index})`} stroke="#fff" strokeWidth="0.6" />
                     <text
                       x={textX}
                       y={textY}
