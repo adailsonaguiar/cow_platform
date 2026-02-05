@@ -60,7 +60,7 @@ export default function LoadingComponent({ onComplete }) {
 
         {/* Loading Text */}
         <div className="dexx-loading-text">
-          <h2 className="dexx-loading-title">Processando suas respostas{dots}</h2>
+          <h2 className="dexx-loading-title">Carregando seu prêmio{dots}</h2>
           <p className="dexx-loading-subtitle">Estamos preparando algo especial para você</p>
         </div>
 

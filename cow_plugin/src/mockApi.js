@@ -58,7 +58,7 @@ const QUESTION_SETS = [
   ],
 ];
 
-const COMPONENT_TYPES = ["quiz", "spinwheel"];
+const COMPONENT_TYPES = ["quiz", "spinwheel", "mysterybox"];
 
 const PRIZE_SETS = [
   [
@@ -147,6 +147,36 @@ function parseApiResponse(apiData) {
   } else if (componentType === "spinwheel" && pluginData.prizes) {
     config.prizes = pluginData.prizes;
     config.preferredItem = pluginData.preferredItem || '';
+    console.log(
+      `🎡 API: Retornando ROLETA com ${config.prizes.length} prêmios`,
+    );
+  } else if (componentType === "mysterybox" && (pluginData.prizes || pluginData.prize)) {
+    // Suporta dois formatos:
+    // 1. Novo: pluginData.prizes = array com { id, label, color, value }
+    // 2. Antigo: pluginData.prize = string com o prêmio único
+    
+    if (pluginData.prizes && Array.isArray(pluginData.prizes)) {
+      // Formato novo com array de prêmios (do MysteryBoxConfig)
+      config.prizes = pluginData.prizes;
+      config.preferredItem = pluginData.preferredItem || '';
+    } else if (pluginData.prize) {
+      // Formato antigo com prêmio único (compatibilidade com "gift" type)
+      config.prizes = [
+        {
+          id: 1,
+          label: pluginData.prize,
+          color: pluginData.color || '#FFD700', // Cor padrão ouro
+          value: pluginData.value || 0
+        }
+      ];
+      config.preferredItem = pluginData.prize; // Sempre o prêmio único
+    }
+    
+    console.log(
+      `🎁 API: Retornando CAIXA SURPRESA com ${config.prizes?.length || 0} prêmio(s)`,
+    );
+    console.log("   Prêmios recebidos:", config.prizes);
+    console.log("   Item preferido:", config.preferredItem || "Nenhum (aleatório)");
   } else {
     console.warn(
       "⚠️ Tipo de componente não reconhecido ou dados faltando, usando fallback",
@@ -174,11 +204,17 @@ function fetchMockConfig() {
     console.log(
       `📋 Mock: Retornando FORMULÁRIO com ${config.questions.length} pergunta(s)`,
     );
-  } else {
+  } else if (componentType === "spinwheel") {
     const randomIndex = Math.floor(Math.random() * PRIZE_SETS.length);
     config.prizes = PRIZE_SETS[randomIndex];
     console.log(
       `🎡 Mock: Retornando ROLETA com ${config.prizes.length} prêmios`,
+    );
+  } else if (componentType === "mysterybox") {
+    const randomIndex = Math.floor(Math.random() * PRIZE_SETS.length);
+    config.prizes = PRIZE_SETS[randomIndex];
+    console.log(
+      `🎁 Mock: Retornando CAIXA SURPRESA com ${config.prizes.length} prêmios`,
     );
   }
 
@@ -204,11 +240,17 @@ export async function fetchPluginConfigByType(
       console.log(
         `📋 Mock (tipo: quiz, cenário ${index}): Retornando ${mockConfig.questions.length} pergunta(s)`,
       );
-    } else {
+    } else if (type === "spinwheel") {
       const index = Math.min(Math.max(0, scenarioIndex), PRIZE_SETS.length - 1);
       mockConfig.prizes = PRIZE_SETS[index];
       console.log(
         `🎡 Mock (tipo: spinwheel, cenário ${index}): Retornando ${mockConfig.prizes.length} prêmios`,
+      );
+    } else if (type === "mysterybox") {
+      const index = Math.min(Math.max(0, scenarioIndex), PRIZE_SETS.length - 1);
+      mockConfig.prizes = PRIZE_SETS[index];
+      console.log(
+        `🎁 Mock (tipo: mysterybox, cenário ${index}): Retornando ${mockConfig.prizes.length} prêmios`,
       );
     }
 

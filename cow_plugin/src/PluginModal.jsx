@@ -1,8 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { fetchPluginConfig } from "./mockApi";
 import FormComponent from "./components/FormComponent";
+import QuizSubmitScreen from "./components/QuizSubmitScreen";
+import PrizeSuccessScreen from "./components/PrizeSuccessScreen";
 import gptManager from "./GPTRewardedManager";
 import { SpinWheel } from "./components/SpinWheel";
+import { MysteryBox } from "./components/MysteryBox";
 import LoadingComponent from "./components/LoadingComponent";
 
 export default function PluginModal({ open, onClose }) {
@@ -17,6 +20,7 @@ export default function PluginModal({ open, onClose }) {
   const [completed, setCompleted] = useState(false);
   const [isLoadingReward, setIsLoadingReward] = useState(false);
   const [currentPrize, setCurrentPrize] = useState(null);
+  const [quizCompleted, setQuizCompleted] = useState(false);
   const prizeRef = useRef(null);
 
   useEffect(() => {
@@ -29,6 +33,7 @@ export default function PluginModal({ open, onClose }) {
       setAnswers({});
       setLoading(true);
       setCompleted(false);
+      setQuizCompleted(false);
       setComponentType(null);
       setQuestions([]);
       setPrizes([]);
@@ -44,16 +49,26 @@ export default function PluginModal({ open, onClose }) {
       // Buscar configuração do plugin da API
       fetchPluginConfig()
         .then((config) => {
+          console.log("📦 Configuração recebida no PluginModal:", config);
           setComponentType(config.type);
           if (config.type === "quiz") {
+            console.log("📋 Quiz recebido com", config.questions?.length || 0, "perguntas");
             setQuestions(config.questions || []);
           } else if (config.type === "spinwheel") {
+            console.log("🎡 Spinwheel recebido com", config.prizes?.length || 0, "prêmios");
+            setPrizes(config.prizes || []);
+            setPreferredItem(config.preferredItem || "");
+          } else if (config.type === "mysterybox") {
+            console.log("🎁 MysteryBox recebido com", config.prizes?.length || 0, "prêmios");
+            console.log("   Prêmios:", config.prizes);
+            console.log("   Item preferido:", config.preferredItem || "nenhum");
             setPrizes(config.prizes || []);
             setPreferredItem(config.preferredItem || "");
           }
           setLoading(false);
         })
         .catch((err) => {
+          console.error("❌ Erro ao carregar configuração:", err);
           onClose();
         });
     } else {
@@ -77,10 +92,19 @@ export default function PluginModal({ open, onClose }) {
       setStep(step + 1);
     } else {
       setStep(step + 1);
-      setCompleted(true);
-      // Inicia loading ao finalizar formulário
-      setIsLoadingReward(true);
+      setQuizCompleted(true);
     }
+  }
+
+  function handleFormSubmit() {
+    console.log("📋 Formulário enviado");
+    setCompleted(true);
+    setIsLoadingReward(true);
+    window.dispatchEvent(
+      new CustomEvent("dexxPluginResponse", {
+        detail: { type: "quiz", answers },
+      }),
+    );
   }
 
   function handleFormComplete() {
@@ -103,6 +127,19 @@ export default function PluginModal({ open, onClose }) {
     window.dispatchEvent(
       new CustomEvent("dexxPluginResponse", {
         detail: { type: "roulette", prize },
+      }),
+    );
+  }
+
+  function handleMysteryBoxComplete(prize) {
+    console.log("🎁 Caixa surpresa completada:", prize);
+    setCompleted(true);
+    setCurrentPrize(prize);
+    // Inicia loading ao finalizar caixa surpresa
+    setIsLoadingReward(true);
+    window.dispatchEvent(
+      new CustomEvent("dexxPluginResponse", {
+        detail: { type: "mysterybox", prize },
       }),
     );
   }
@@ -168,32 +205,12 @@ export default function PluginModal({ open, onClose }) {
     </div>
   ) : isLoadingReward ? (
     <LoadingComponent onComplete={handleLoadingComplete} />
-  ) : currentPrize && componentType === "spinwheel" ? (
-    <div className="dexx-form-container">
-      <div className="dexx-success-state">
-        <div className="dexx-success-icon-wrapper">
-          <div className="dexx-success-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-        </div>
-        <h2 className="dexx-form-title">🏆 Parabéns! 🏆</h2>
-        <p className="dexx-form-subtitle">Você sorteou:</p>
-        <p style={{ fontSize: '24px', fontWeight: '800', color: '#7c3aed', marginTop: '16px' }}>{currentPrize.label}</p>
-        
-        <div className="dexx-reward-notice">
-          <div className="dexx-reward-icon">🎁</div>
-          <div className="dexx-reward-text">
-            <span className="dexx-reward-title">Prêmio desbloqueado!</span>
-            <span className="dexx-reward-description">Como agradecimento, preparamos algo especial para você.</span>
-          </div>
-        </div>
-      </div>
-      <div className="dexx-form-footer">
-        <span className="dexx-footer-text">Veja a recomendação patrocinada para continuar</span>
-      </div>
-    </div>
+  ) : quizCompleted && !completed && componentType === "quiz" ? (
+    <QuizSubmitScreen onSubmit={handleFormSubmit} />
+  ) : currentPrize && (componentType === "spinwheel" || componentType === "mysterybox") ? (
+    <PrizeSuccessScreen componentType={componentType} prize={currentPrize} />
+  ) : completed && componentType === "quiz" ? (
+    <PrizeSuccessScreen componentType="quiz" prize={null} />
   ) : componentType === "quiz" ? (
     <FormComponent
       questions={questions}
@@ -205,6 +222,12 @@ export default function PluginModal({ open, onClose }) {
   ) : componentType === "spinwheel" ? (
     <SpinWheel
       onComplete={handleRouletteComplete}
+      prizes={prizes}
+      preferredItem={preferredItem}
+    />
+  ) : componentType === "mysterybox" ? (
+    <MysteryBox
+      onComplete={handleMysteryBoxComplete}
       prizes={prizes}
       preferredItem={preferredItem}
     />
