@@ -32,8 +32,9 @@ export class CowService {
     return this.cowRepository.findByType(type);
   }
 
-  async findByUrl(url: string): Promise<Cow | null> {
-    return this.cowRepository.findByUrl(url);
+  async findBySiteUrl(url: string): Promise<Cow | null> {
+    console.log(`Buscando Cow por Site URL: ${url}`);
+    return this.cowRepository.findBySiteUrl(url);
   }
 
   async update(id: string, updateCowDto: UpdateCowDto): Promise<Cow> {

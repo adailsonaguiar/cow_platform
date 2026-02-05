@@ -9,6 +9,8 @@ export default defineConfig({
   },
   plugins: [react()],
   build: {
+    outDir: '../',
+    emptyOutDir: false,
     lib: {
       entry: '/src/plugin-entry.jsx',
       name: 'DexxPlugin',

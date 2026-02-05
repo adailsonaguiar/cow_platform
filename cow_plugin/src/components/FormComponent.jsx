@@ -1,27 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import LoadingComponent from './LoadingComponent'
 
-export default function FormComponent({ questions, step, answers, onAnswer }) {
-  const [showLoading, setShowLoading] = useState(true)
-  const [isComplete, setIsComplete] = useState(false)
-
+export default function FormComponent({ questions, step, answers, onAnswer, onComplete }) {
   useEffect(() => {
-    // Mostra loading quando todas as perguntas foram respondidas
-    if (step > questions.length && !showLoading && !isComplete) {
-      setShowLoading(true)
+    // Notifica o componente pai quando todas as perguntas foram respondidas
+    if (step > questions.length && onComplete) {
+      onComplete()
     }
-  }, [step, questions.length, showLoading, isComplete])
+  }, [step, questions.length, onComplete])
 
-  const handleLoadingComplete = () => {
-    setShowLoading(false)
-    setIsComplete(true)
-  }
-
-  if (showLoading) {
-    return <LoadingComponent onComplete={handleLoadingComplete} />
-  }
-
-  if (isComplete || step > questions.length) {
+  if (step > questions.length) {
     return (
       <div className="dexx-form-container">
         <div className="dexx-success-state">

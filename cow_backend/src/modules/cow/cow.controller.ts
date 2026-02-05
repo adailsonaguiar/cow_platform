@@ -44,7 +44,7 @@ export class CowController {
     }
 
     if (url) {
-      return this.cowService.findByUrl(url);
+      return this.cowService.findBySiteUrl(url);
     }
 
     return this.cowService.findAll();

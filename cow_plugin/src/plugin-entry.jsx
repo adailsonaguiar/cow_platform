@@ -3,9 +3,10 @@ import { createRoot } from 'react-dom/client'
 import DexxPluginModal from './PluginModal'
 // Importa os estilos - Vite vai injetar inline automaticamente no bundle
 import stylesContent from './styles.css?inline'
+import loadingStyles from './styles/loading.css?inline'
 
 // Injetar estilos da modal no runtime para que `plugin.js` seja standalone
-const __dexx_styles = stylesContent
+const __dexx_styles = stylesContent + '\n' + loadingStyles
 
 function __injectStyles() {
   if (document.getElementById('dexx-plugin-styles')) return

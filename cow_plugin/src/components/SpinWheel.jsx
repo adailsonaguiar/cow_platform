@@ -59,32 +59,34 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
       setWinner(winningPrize.label);
       setWinnerIndex(targetIndex);
       setIsSpinning(false);
-      
-      // Notifica o componente pai sobre a conclusão
-      if (onComplete) {
-        setTimeout(() => {
-          onComplete(winningPrize);
-        }, 1000);
-      }
     }, 6000);
+  };
+
+  const handleObtainReward = () => {
+    // Notifica o componente pai para iniciar o loading
+    if (onComplete && winner) {
+      const winningPrize = segments[winnerIndex];
+      onComplete(winningPrize);
+    }
   };
 
   return (
     <div className="dexx-spinwheel-container">
       {/* Header */}
-      <div className="dexx-spinwheel-header">
-        <div className="dexx-spinwheel-badge">
-          <span className="dexx-spinwheel-badge-icon">🎰</span>
-          <span className="dexx-spinwheel-badge-text">Roleta de Prêmios</span>
-        </div>
-        <h2 className="dexx-spinwheel-title">Gire e ganhe prêmios!</h2>
-        <p className="dexx-spinwheel-subtitle">Tente a sorte e descubra seu prêmio</p>
-      </div>
+      <>
+        <div className="dexx-spinwheel-header">
+            <div className="dexx-spinwheel-badge">
+              <span className="dexx-spinwheel-badge-icon">💎</span>
+              <span className="dexx-spinwheel-badge-text">Roleta da Sorte</span>
+            </div>
+            <h2 className="dexx-spinwheel-title">Gire e Ganhe Prêmios Incríveis!</h2>
+            <p className="dexx-spinwheel-subtitle">✨ Sua sorte está a um clique de distância ✨</p>
+          </div>
 
-      {/* Wheel Section */}
-      <div className="dexx-spinwheel-wheel-section">
+          {/* Wheel Section */}
+          <div className="dexx-spinwheel-wheel-section">
         {/* Arrow indicator */}
-        <div className="dexx-spinwheel-arrow-container">
+        <div className={`dexx-spinwheel-arrow-container`}>
           <div className="dexx-spinwheel-arrow" />
         </div>
 
@@ -177,39 +179,48 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
             <div className="dexx-spinwheel-center">
               <div className="dexx-spinwheel-center-inner">
                 {isSpinning ? (
-                  <span className="dexx-spinwheel-center-spinning">⏳</span>
+                  <span className="dexx-spinwheel-center-spinning">🔥</span>
                 ) : (
-                  <span className="dexx-spinwheel-center-icon">🎯</span>
+                  <span className="dexx-spinwheel-center-icon">💰</span>
                 )}
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Winner display */}
-      {winner && (
-        <div className="dexx-spinwheel-winner">
-          <div className="dexx-spinwheel-winner-icon">🎉</div>
-          <p className="dexx-spinwheel-winner-label">Parabéns! Você ganhou:</p>
-          <p className="dexx-spinwheel-winner-prize">{winner}</p>
         </div>
-      )}
 
-      {/* Spin button */}
-      {!isSpinning && !winner && (
-        <button onClick={spin} className="dexx-spinwheel-button">
-          <span className="dexx-spinwheel-button-icon">🎲</span>
-          <span>Girar Roleta</span>
-        </button>
-      )}
+        {/* Winner display
+        {winner && (
+          <div className="dexx-spinwheel-winner">
+            <div className="dexx-spinwheel-winner-icon">�</div>
+            <p className="dexx-spinwheel-winner-label">🎊 Parabéns! Você Ganhou 🎊</p>
+            <p className="dexx-spinwheel-winner-prize">{winner}</p>
+          </div>
+        )} */}
 
-      {/* Spinning state */}
-      {isSpinning && (
-        <div className="dexx-spinwheel-spinning-text">
-          <span>Girando...</span>
-        </div>
-      )}
+        {/* Obtain Reward Button */}
+        {winner && (
+          <button onClick={handleObtainReward} className="dexx-spinwheel-button">
+            <span className="dexx-spinwheel-button-icon">💎</span>
+            <span>Resgatar Prêmio</span>
+          </button>
+        )}
+
+        {/* Spin button */}
+        {!isSpinning && !winner && (
+          <button onClick={spin} className="dexx-spinwheel-button">
+            <span className="dexx-spinwheel-button-icon">🎲</span>
+            <span>Girar a Roleta</span>
+          </button>
+        )}
+
+        {/* Spinning state */}
+        {isSpinning && (
+          <div className="dexx-spinwheel-spinning-text">
+            <span>⚡ Girando a Roleta... ⚡</span>
+          </div>
+        )}
+      </>
     </div>
   );
 };

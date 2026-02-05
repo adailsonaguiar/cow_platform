@@ -28,8 +28,18 @@ export class CowRepository {
     return this.cowModel.find({ type }).exec();
   }
 
-  async findByUrl(url: string): Promise<Cow | null> {
-    return this.cowModel.findOne({ url }).exec();
+  async findBySiteUrl(siteUrl: string): Promise<Cow | null> {
+    // Remove barra final se existir para normalizar
+    const normalizedUrl = siteUrl.replace(/\/$/, '');
+    // Escapa caracteres especiais da URL para uso em regex
+    const escapedUrl = normalizedUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Adiciona \\/? no final para aceitar URLs com ou sem barra final
+    return this.cowModel
+      .findOne({
+        sites: new RegExp(escapedUrl + '\\/?'),
+        active: true,
+      })
+      .exec();
   }
 
   async update(id: string, cowData: Partial<Cow>): Promise<Cow | null> {
