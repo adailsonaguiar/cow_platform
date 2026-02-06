@@ -1,6 +1,27 @@
 version: '3.8'
 
 services:
+  # Aplicação Backend NestJS
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cow_backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGODB_URI: mongodb://admin:admin123@mongodb:27017/cow_platform?authSource=admin
+      JWT_SECRET: sua-chave-secreta-jwt-aqui
+      JWT_REFRESH_SECRET: sua-chave-secreta-refresh-aqui
+    depends_on:
+      - mongodb
+    networks:
+      - cow_network
+
+  # Banco de dados MongoDB
   mongodb:
     image: mongo:latest
     container_name: cow_mongodb

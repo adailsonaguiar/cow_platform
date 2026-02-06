@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Build output
+dist
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Test
+coverage
+.nyc_output
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+
+# Misc
+README.md
+MONGODB_SETUP.md
+EXAMPLES.md
