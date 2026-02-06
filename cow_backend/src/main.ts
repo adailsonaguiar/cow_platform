@@ -16,13 +16,7 @@ async function bootstrap() {
 
   // Habilita CORS para permitir requisições do frontend
   app.enableCors({
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:3001',
-    ],
+    origin: 'https://cow-platform-hup1.vercel.app',
     credentials: true,
   });
 
