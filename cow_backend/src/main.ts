@@ -14,10 +14,11 @@ async function bootstrap() {
     }),
   );
 
-  // Habilita CORS para permitir requisições do frontend
+  // Habilita CORS para permitir requisições de qualquer origem
   app.enableCors({
-    origin: 'https://cow-platform-hup1.vercel.app',
-    credentials: true,
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   await app.listen(process.env.PORT ?? 3000);
