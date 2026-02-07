@@ -33,15 +33,12 @@ export class CowRepository {
     const normalizedUrl = siteUrl.replace(/\/+$/, '');
     // Escapa caracteres especiais da URL para uso em regex
     const escapedUrl = normalizedUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    // Busca URLs que correspondam com ou sem barra final (usando regex com âncoras)
-    // O padrão ^.../?$ garante correspondência exata da URL
+    // Busca URLs que correspondam com ou sem barra final
+    // O padrão permite que a URL esteja em qualquer posição da lista separada por vírgula
+    // Usa word boundary (início da string, vírgula ou espaço) antes e depois da URL
     return this.cowModel
       .findOne({
-        $or: [
-          { sites: normalizedUrl },
-          { sites: normalizedUrl + '/' },
-          { sites: new RegExp('^' + escapedUrl + '\\/?$') },
-        ],
+        sites: new RegExp('(^|,\\s*)' + escapedUrl + '\\/?($|\\s*,)', 'i'),
         active: true,
       })
       .exec();
