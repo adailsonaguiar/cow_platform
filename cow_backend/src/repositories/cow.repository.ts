@@ -29,14 +29,19 @@ export class CowRepository {
   }
 
   async findBySiteUrl(siteUrl: string): Promise<Cow | null> {
-    // Remove barra final se existir para normalizar
-    const normalizedUrl = siteUrl.replace(/\/$/, '');
+    // Remove barra final se existir para normalizar a URL de busca
+    const normalizedUrl = siteUrl.replace(/\/+$/, '');
     // Escapa caracteres especiais da URL para uso em regex
     const escapedUrl = normalizedUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    // Adiciona \\/? no final para aceitar URLs com ou sem barra final
+    // Busca URLs que correspondam com ou sem barra final (usando regex com âncoras)
+    // O padrão ^.../?$ garante correspondência exata da URL
     return this.cowModel
       .findOne({
-        sites: new RegExp(escapedUrl + '\\/?'),
+        $or: [
+          { sites: normalizedUrl },
+          { sites: normalizedUrl + '/' },
+          { sites: new RegExp('^' + escapedUrl + '\\/?$') },
+        ],
         active: true,
       })
       .exec();
