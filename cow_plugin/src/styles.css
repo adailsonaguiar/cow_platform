@@ -247,6 +247,7 @@ body {
 .dexx-option-button:hover {
   background: var(--dexx-gray-50);
   border-color: var(--dexx-gray-300);
+  color: var(--dexx-gray-700);
   transform: translateY(-1px);
 }
 
