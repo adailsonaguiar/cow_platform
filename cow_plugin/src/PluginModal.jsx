@@ -38,7 +38,7 @@ export default function PluginModal({ open, onClose }) {
       setQuestions([]);
       setPrizes([]);
       // Bloquear scroll da página
-      document.body.style.overflow = "hidden";
+      // document.body.style.overflow = "hidden";
 
       // 🔑 CRÍTICO: Inicializa GPT Listeners IMEDIATAMENTE ao abrir modal
       // (igual plugin-funcional.js linha ~698)
