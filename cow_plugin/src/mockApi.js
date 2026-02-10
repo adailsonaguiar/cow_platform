@@ -65,6 +65,7 @@ const PRIZE_SETS = [
     { id: 1, label: "20% OFF", color: "#FF6B6B", value: 20 },
     { id: 2, label: "30% OFF", color: "#4ECDC4", value: 30 },
     { id: 3, label: "15% OFF", color: "#FFE66D", value: 15 },
+    { id: 4, label: "40% OFF", color: "#95E1D3", value: 40 },
   ],
 ];
 
