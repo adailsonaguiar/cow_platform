@@ -49,19 +49,13 @@ export default function PluginModal({ open, onClose }) {
       // Buscar configuração do plugin da API
       fetchPluginConfig()
         .then((config) => {
-          console.log("📦 Configuração recebida no PluginModal:", config);
           setComponentType(config.type);
           if (config.type === "quiz") {
-            console.log("📋 Quiz recebido com", config.questions?.length || 0, "perguntas");
             setQuestions(config.questions || []);
           } else if (config.type === "spinwheel") {
-            console.log("🎡 Spinwheel recebido com", config.prizes?.length || 0, "prêmios");
             setPrizes(config.prizes || []);
             setPreferredItem(config.preferredItem || "");
           } else if (config.type === "mysterybox") {
-            console.log("🎁 MysteryBox recebido com", config.prizes?.length || 0, "prêmios");
-            console.log("   Prêmios:", config.prizes);
-            console.log("   Item preferido:", config.preferredItem || "nenhum");
             setPrizes(config.prizes || []);
             setPreferredItem(config.preferredItem || "");
           }

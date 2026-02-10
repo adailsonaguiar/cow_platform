@@ -7,10 +7,14 @@ export const MysteryBox = ({ prizes, preferredItem, onComplete }) => {
 
   // Usa os prizes da API ou array vazio como fallback
   const availablePrizes = prizes || [];
+  
+  // A quantidade de caixinhas é igual à quantidade de prêmios (mínimo 2, máximo 5)
+  const numberOfBoxes = Math.min(Math.max(availablePrizes.length, 2), 5);
 
   console.log("🎁 MysteryBox montado com:", {
     prêmios: availablePrizes.length,
     itemPreferido: preferredItem || "aleatório",
+    caixinhas: numberOfBoxes,
     prizesProp: availablePrizes,
   });
 
@@ -71,8 +75,8 @@ export const MysteryBox = ({ prizes, preferredItem, onComplete }) => {
 
       {/* Boxes Section */}
       <div className="dexx-mysterybox-boxes-section">
-        <div className="dexx-mysterybox-boxes-grid">
-          {[0, 1, 2].map((boxIndex) => (
+        <div className={`dexx-mysterybox-boxes-grid dexx-mysterybox-boxes-${numberOfBoxes}`}>
+          {Array.from({ length: numberOfBoxes }, (_, boxIndex) => (
             <div
               key={boxIndex}
               className={`dexx-mysterybox-box ${

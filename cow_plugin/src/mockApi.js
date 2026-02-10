@@ -69,6 +69,19 @@ const PRIZE_SETS = [
   ],
 ];
 
+// Configurações específicas para MysteryBox (Caixa Surpresa)
+// A quantidade de caixinhas exibidas é igual à quantidade de prêmios no array
+const MYSTERYBOX_SETS = [
+  {
+    prizes: [
+      { id: 1, label: "10% OFF" },
+      { id: 2, label: "15% OFF" },
+      { id: 3, label: "25% OFF" },
+    ],
+    preferredItem: "25% OFF", // Sempre sorteará este prêmio
+  }
+];
+
 /**
  * Busca configuração do plugin da API real
  * Se a API falhar, retorna dados de fallback
@@ -152,8 +165,9 @@ function parseApiResponse(apiData) {
     );
   } else if (componentType === "mysterybox" && (pluginData.prizes || pluginData.prize)) {
     // Suporta dois formatos:
-    // 1. Novo: pluginData.prizes = array com { id, label, color, value }
+    // 1. Novo: pluginData.prizes = array com { id, label }
     // 2. Antigo: pluginData.prize = string com o prêmio único
+    // A quantidade de caixinhas = quantidade de prêmios
     
     if (pluginData.prizes && Array.isArray(pluginData.prizes)) {
       // Formato novo com array de prêmios (do MysteryBoxConfig)
@@ -165,15 +179,13 @@ function parseApiResponse(apiData) {
         {
           id: 1,
           label: pluginData.prize,
-          color: pluginData.color || '#FFD700', // Cor padrão ouro
-          value: pluginData.value || 0
         }
       ];
       config.preferredItem = pluginData.prize; // Sempre o prêmio único
     }
     
     console.log(
-      `🎁 API: Retornando CAIXA SURPRESA com ${config.prizes?.length || 0} prêmio(s)`,
+      `🎁 API: Retornando CAIXA SURPRESA com ${config.prizes?.length || 0} prêmio(s)/caixinha(s)`,
     );
     console.log("   Prêmios recebidos:", config.prizes);
     console.log("   Item preferido:", config.preferredItem || "Nenhum (aleatório)");
@@ -192,7 +204,7 @@ function parseApiResponse(apiData) {
  */
 function fetchMockConfig() {
   const componentType =
-    COMPONENT_TYPES[Math.floor(Math.random() * COMPONENT_TYPES.length)];
+    COMPONENT_TYPES[2];
 
   let config = {
     type: componentType,
@@ -211,11 +223,14 @@ function fetchMockConfig() {
       `🎡 Mock: Retornando ROLETA com ${config.prizes.length} prêmios`,
     );
   } else if (componentType === "mysterybox") {
-    const randomIndex = Math.floor(Math.random() * PRIZE_SETS.length);
-    config.prizes = PRIZE_SETS[randomIndex];
+    const randomIndex = Math.floor(Math.random() * MYSTERYBOX_SETS.length);
+    const mysteryboxConfig = MYSTERYBOX_SETS[randomIndex];
+    config.prizes = mysteryboxConfig.prizes;
+    config.preferredItem = mysteryboxConfig.preferredItem;
     console.log(
-      `🎁 Mock: Retornando CAIXA SURPRESA com ${config.prizes.length} prêmios`,
+      `🎁 Mock: Retornando CAIXA SURPRESA com ${config.prizes.length} prêmios/caixinhas`,
     );
+    console.log(`   Item preferido: ${config.preferredItem || "Nenhum (aleatório)"}`);
   }
 
   return config;
@@ -247,10 +262,12 @@ export async function fetchPluginConfigByType(
         `🎡 Mock (tipo: spinwheel, cenário ${index}): Retornando ${mockConfig.prizes.length} prêmios`,
       );
     } else if (type === "mysterybox") {
-      const index = Math.min(Math.max(0, scenarioIndex), PRIZE_SETS.length - 1);
-      mockConfig.prizes = PRIZE_SETS[index];
+      const index = Math.min(Math.max(0, scenarioIndex), MYSTERYBOX_SETS.length - 1);
+      const mysteryboxConfig = MYSTERYBOX_SETS[index];
+      mockConfig.prizes = mysteryboxConfig.prizes;
+      mockConfig.preferredItem = mysteryboxConfig.preferredItem;
       console.log(
-        `🎁 Mock (tipo: mysterybox, cenário ${index}): Retornando ${mockConfig.prizes.length} prêmios`,
+        `🎁 Mock (tipo: mysterybox, cenário ${index}): Retornando ${mockConfig.prizes.length} prêmios/caixinhas`,
       );
     }
 
