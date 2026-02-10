@@ -10,6 +10,7 @@ export const BLOCK_TYPES = [
   { value: 'scratch', label: 'Scratch Card', icon: '🎫', description: 'Scratch to reveal' },
   { value: 'countdown', label: 'Countdown', icon: '⏱️', description: 'Time-limited offers' },
   { value: 'gift', label: 'Gift Box', icon: '🎁', description: 'Surprise rewards' },
+  { value: 'mysterybox', label: 'Caixa Surpresa', icon: '📦', description: 'Escolha uma caixa e ganhe prêmios' },
 ];
 
 export const LANGUAGES = [

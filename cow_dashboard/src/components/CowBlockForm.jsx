@@ -22,6 +22,7 @@ import { QuizConfig } from '@/components/blocks/QuizConfig';
 import { ScratchConfig } from '@/components/blocks/ScratchConfig';
 import { CountdownConfig } from '@/components/blocks/CountdownConfig';
 import { PresenteConfig } from '@/components/blocks/PresenteConfig';
+import { MysteryBoxConfig } from '@/components/blocks/MysteryBoxConfig';
 import { SitesInput } from '@/components/SitesInput';
 
 export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode = 'create' }) {
@@ -75,6 +76,11 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
         return data || {};
       case 'gift':
         return data || {};
+      case 'mysterybox':
+        return {
+          prizes: data?.prizes || [],
+          preferredItem: data?.preferredItem || ''
+        };
       default:
         return null;
     }
@@ -104,6 +110,10 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
         break;
       case 'gift':
         blockData = { ...blockData, ...formData.blockConfig };
+        break;
+      case 'mysterybox':
+        blockData.prizes = formData.blockConfig?.prizes || [];
+        blockData.preferredItem = formData.blockConfig?.preferredItem || '';
         break;
       default:
         blockData = { ...formData.data, language: formData.language };
@@ -171,6 +181,13 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
       case 'gift':
         return (
           <PresenteConfig
+            value={formData.blockConfig || {}}
+            onChange={handleBlockConfigChange}
+          />
+        );
+      case 'mysterybox':
+        return (
+          <MysteryBoxConfig
             value={formData.blockConfig || {}}
             onChange={handleBlockConfigChange}
           />
