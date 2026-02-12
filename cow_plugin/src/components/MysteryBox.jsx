@@ -9,14 +9,7 @@ export const MysteryBox = ({ prizes, preferredItem, onComplete }) => {
   const availablePrizes = prizes || [];
   
   // A quantidade de caixinhas é igual à quantidade de prêmios (mínimo 2, máximo 5)
-  const numberOfBoxes = Math.min(Math.max(availablePrizes.length, 2), 5);
-
-  console.log("🎁 MysteryBox montado com:", {
-    prêmios: availablePrizes.length,
-    itemPreferido: preferredItem || "aleatório",
-    caixinhas: numberOfBoxes,
-    prizesProp: availablePrizes,
-  });
+  const numberOfBoxes = Math.min(Math.max(availablePrizes.length, 2), 6);
 
   // Se não houver prêmios, mostra mensagem de carregamento
   if (!availablePrizes || availablePrizes.length === 0) {

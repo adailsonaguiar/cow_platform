@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { fetchPluginConfig } from "./mockApi";
+import { fetchPluginConfig } from "./api";
 import FormComponent from "./components/FormComponent";
 import QuizSubmitScreen from "./components/QuizSubmitScreen";
 import PrizeSuccessScreen from "./components/PrizeSuccessScreen";
@@ -59,11 +59,13 @@ export default function PluginModal({ open, onClose }) {
             setPrizes(config.prizes || []);
             setPreferredItem(config.preferredItem || "");
           }
-          setLoading(false);
         })
         .catch((err) => {
           console.error("❌ Erro ao carregar configuração:", err);
           onClose();
+        })
+        .finally(() => {
+          setLoading(false);
         });
     } else {
       // Restaurar scroll da página e limpar recursos GPT
@@ -192,12 +194,9 @@ export default function PluginModal({ open, onClose }) {
 
   if (!visible) return null;
 
-  const content = loading ? (
-    <div style={{ textAlign: "center", padding: "40px 0" }}>
-      <div style={{ fontSize: "48px", marginBottom: "20px" }}>⏳</div>
-      <p>Carregando...</p>
-    </div>
-  ) : isLoadingReward ? (
+  if(loading) return <></>
+
+  const content = isLoadingReward ? (
     <LoadingComponent onComplete={handleLoadingComplete} />
   ) : quizCompleted && !completed && componentType === "quiz" ? (
     <QuizSubmitScreen onSubmit={handleFormSubmit} />
