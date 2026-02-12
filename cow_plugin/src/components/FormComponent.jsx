@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 
-export default function FormComponent({ questions, step, answers, onAnswer, onComplete }) {
+export default function FormComponent({ gameProps, step, onAnswer }) {
+  const questions = gameProps.questions;
   // Se o quiz foi completado, retorna null (PluginModal mostrará a tela de sucesso)
   if (!questions || questions.length === 0 || step > questions.length) {
     return null

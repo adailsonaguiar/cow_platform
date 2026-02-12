@@ -14,14 +14,14 @@ export default function PluginModal({ open, onClose }) {
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState({});
   const [questions, setQuestions] = useState([]);
-  const [prizes, setPrizes] = useState([]);
-  const [preferredItem, setPreferredItem] = useState("");
   const [loading, setLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
   const [isLoadingReward, setIsLoadingReward] = useState(false);
   const [currentPrize, setCurrentPrize] = useState(null);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const prizeRef = useRef(null);
+
+  const [gameProps, setGamesProps] = useState({});
 
   useEffect(() => {
     if (window.location.hash.includes("goog_rewarded")) {
@@ -36,7 +36,7 @@ export default function PluginModal({ open, onClose }) {
       setQuizCompleted(false);
       setComponentType(null);
       setQuestions([]);
-      setPrizes([]);
+      // setPrizes([]);
       // Bloquear scroll da página
       // document.body.style.overflow = "hidden";
 
@@ -50,15 +50,7 @@ export default function PluginModal({ open, onClose }) {
       fetchPluginConfig()
         .then((config) => {
           setComponentType(config.type);
-          if (config.type === "quiz") {
-            setQuestions(config.questions || []);
-          } else if (config.type === "spinwheel") {
-            setPrizes(config.prizes || []);
-            setPreferredItem(config.preferredItem || "");
-          } else if (config.type === "mysterybox") {
-            setPrizes(config.prizes || []);
-            setPreferredItem(config.preferredItem || "");
-          }
+          setGamesProps(config);
         })
         .catch((err) => {
           console.error("❌ Erro ao carregar configuração:", err);
@@ -101,11 +93,6 @@ export default function PluginModal({ open, onClose }) {
         detail: { type: "quiz", answers },
       }),
     );
-  }
-
-  function handleFormComplete() {
-    // Formulário completou, já mostrando loading
-    // Aguarda a conclusão do loading para mostrar link do prêmio
   }
 
   function handleLoadingComplete() {
@@ -206,23 +193,19 @@ export default function PluginModal({ open, onClose }) {
     <PrizeSuccessScreen componentType="quiz" prize={null} />
   ) : componentType === "quiz" ? (
     <FormComponent
-      questions={questions}
+      gameProps={gameProps}
       step={step}
-      answers={answers}
       onAnswer={dispatchResponse}
-      onComplete={handleFormComplete}
     />
   ) : componentType === "spinwheel" ? (
     <SpinWheel
       onComplete={handleRouletteComplete}
-      prizes={prizes}
-      preferredItem={preferredItem}
+      gameProps={gameProps}
     />
   ) : componentType === "mysterybox" ? (
     <MysteryBox
       onComplete={handleMysteryBoxComplete}
-      prizes={prizes}
-      preferredItem={preferredItem}
+      gameProps={gameProps}
     />
   ) : null;
 

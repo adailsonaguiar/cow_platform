@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 
-export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
+export const SpinWheel = ({ gameProps, onComplete }) => {
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState(null);
@@ -8,7 +8,7 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
   const wheelRef = useRef(null);
 
   // Usa os prizes da API ou array vazio como fallback
-  const segments = prizes || [];
+  const segments = gameProps?.prizes || [];
   const segmentAngle = segments.length > 0 ? 360 / segments.length : 0;
 
   // Se não houver prêmios, mostra mensagem de carregamento
@@ -35,7 +35,7 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
     if (preferredItem && preferredItem !== 'none' && preferredItem !== '') {
       // Se há um item preferido definido, procura por ele
       const preferredIndex = segments.findIndex(segment => 
-        segment.label === preferredItem
+        segment.label === gameProps?.preferredItem
       );
       targetIndex = preferredIndex !== -1 ? preferredIndex : 0;
     } else {
@@ -77,10 +77,10 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
         <div className="dexx-spinwheel-header">
             <div className="dexx-spinwheel-badge">
               <span className="dexx-spinwheel-badge-icon">💎</span>
-              <span className="dexx-spinwheel-badge-text">Roleta da Sorte</span>
+              <span className="dexx-spinwheel-badge-text">{gameProps?.title ||'Roleta da Sorte'}</span>
             </div>
-            <h2 className="dexx-spinwheel-title">Gire e Ganhe Prêmios Incríveis!</h2>
-            <p className="dexx-spinwheel-subtitle">✨ Sua sorte está a um clique de distância ✨</p>
+            <h2 className="dexx-spinwheel-title">{gameProps?.subtitle || "Gire e Ganhe Prêmios Incríveis!"}</h2>
+            <p className="dexx-spinwheel-subtitle">{gameProps?.description || "✨ Sua sorte está a um clique de distância ✨"}</p>
           </div>
 
           {/* Wheel Section */}
@@ -189,20 +189,11 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
         </div>
         </div>
 
-        {/* Winner display
-        {winner && (
-          <div className="dexx-spinwheel-winner">
-            <div className="dexx-spinwheel-winner-icon">�</div>
-            <p className="dexx-spinwheel-winner-label">🎊 Parabéns! Você Ganhou 🎊</p>
-            <p className="dexx-spinwheel-winner-prize">{winner}</p>
-          </div>
-        )} */}
-
         {/* Obtain Reward Button */}
         {winner && (
           <button onClick={handleObtainReward} className="dexx-spinwheel-button">
             <span className="dexx-spinwheel-button-icon">💎</span>
-            <span>Resgatar Prêmio</span>
+            <span>{gameProps?.claimButtonText || "Resgatar Prêmio"}</span>
           </button>
         )}
 
@@ -210,14 +201,14 @@ export const SpinWheel = ({ prizes, preferredItem, onComplete }) => {
         {!isSpinning && !winner && (
           <button onClick={spin} className="dexx-spinwheel-button">
             <span className="dexx-spinwheel-button-icon">🎲</span>
-            <span>Girar a Roleta</span>
+            <span>{gameProps?.spinButtonText || "Girar a Roleta"}</span>
           </button>
         )}
 
         {/* Spinning state */}
         {isSpinning && (
           <div className="dexx-spinwheel-spinning-text">
-            <span>⚡ Girando a Roleta... ⚡</span>
+            <span>{gameProps?.spinningText || "⚡ Girando a Roleta... ⚡"}</span>
           </div>
         )}
       </>

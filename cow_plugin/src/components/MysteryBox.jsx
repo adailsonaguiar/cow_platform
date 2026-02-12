@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
-export const MysteryBox = ({ prizes, preferredItem, onComplete }) => {
+export const MysteryBox = ({ gameProps, onComplete }) => {
   const [selectedBox, setSelectedBox] = useState(null);
   const [isRevealing, setIsRevealing] = useState(false);
   const [winner, setWinner] = useState(null);
 
   // Usa os prizes da API ou array vazio como fallback
-  const availablePrizes = prizes || [];
+  const availablePrizes = gameProps.prizes || [];
   
   // A quantidade de caixinhas é igual à quantidade de prêmios (mínimo 2, máximo 5)
   const numberOfBoxes = Math.min(Math.max(availablePrizes.length, 2), 6);
@@ -33,9 +33,9 @@ export const MysteryBox = ({ prizes, preferredItem, onComplete }) => {
     setTimeout(() => {
       let selectedPrize;
       
-      if (preferredItem && preferredItem !== 'none' && preferredItem !== '') {
+      if (gameProps?.preferredItem && gameProps?.preferredItem !== 'none' && gameProps?.preferredItem !== '') {
         // Se há um item preferido definido, procura por ele
-        const preferredPrize = availablePrizes.find(prize => prize.label === preferredItem);
+        const preferredPrize = availablePrizes.find(prize => prize.label === gameProps?.preferredItem);
         selectedPrize = preferredPrize || availablePrizes[0];
       } else {
         // Se não há item preferido, escolhe aleatoriamente
@@ -60,10 +60,10 @@ export const MysteryBox = ({ prizes, preferredItem, onComplete }) => {
       <div className="dexx-mysterybox-header">
         <div className="dexx-mysterybox-badge">
           <span className="dexx-mysterybox-badge-icon">🎁</span>
-          <span className="dexx-mysterybox-badge-text">Caixa Surpresa</span>
+          <span className="dexx-mysterybox-badge-text">{gameProps?.title || 'Caixa Surpresa'}</span>
         </div>
-        <h2 className="dexx-mysterybox-title">Escolha Sua Caixa da Sorte!</h2>
-        <p className="dexx-mysterybox-subtitle">✨ Uma delas esconde um prêmio especial ✨</p>
+        <h2 className="dexx-mysterybox-title">{gameProps?.subtitle || 'Escolha Sua Caixa da Sorte!'}</h2>
+        <p className="dexx-mysterybox-subtitle">{gameProps?.description || '✨ Uma delas esconde um prêmio especial ✨'}</p>
       </div>
 
       {/* Boxes Section */}
@@ -108,7 +108,7 @@ export const MysteryBox = ({ prizes, preferredItem, onComplete }) => {
           <>
             <button onClick={handleClaimReward} className="dexx-mysterybox-button">
               <span className="dexx-mysterybox-button-icon">💎</span>
-              <span>Resgatar Prêmio</span>
+              <span>{gameProps?.claimButtonText || 'Resgatar Prêmio'}</span>
             </button>
 
             <div className="dexx-mysterybox-ad-notice">
