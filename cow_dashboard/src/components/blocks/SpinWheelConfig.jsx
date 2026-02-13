@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Input, Label } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
-import { Plus, Trash2, GripVertical, Target } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Target, Type } from 'lucide-react';
 
 export function SpinWheelConfig({ value = [], onChange }) {
   // Check if value is an object with prizes or just an array (backwards compatibility)
@@ -16,12 +16,26 @@ export function SpinWheelConfig({ value = [], onChange }) {
   ]);
   const [preferredItem, setPreferredItem] = useState(initialPreferredItem);
 
+  // Campos de texto do modal
+  const [title, setTitle] = useState(value.title || '');
+  const [subtitle, setSubtitle] = useState(value.subtitle || '');
+  const [description, setDescription] = useState(value.description || '');
+  const [claimButtonText, setClaimButtonText] = useState(value.claimButtonText || '');
+  const [spinButtonText, setSpinButtonText] = useState(value.spinButtonText || '');
+  const [spinningText, setSpinningText] = useState(value.spinningText || '');
+
   useEffect(() => {
     onChange({
       prizes,
-      preferredItem
+      preferredItem,
+      title,
+      subtitle,
+      description,
+      claimButtonText,
+      spinButtonText,
+      spinningText
     });
-  }, [prizes, preferredItem]);
+  }, [prizes, preferredItem, title, subtitle, description, claimButtonText, spinButtonText, spinningText]);
 
   const addPrize = () => {
     const newId = prizes.length > 0 ? Math.max(...prizes.map(p => p.id)) + 1 : 1;
@@ -44,11 +58,89 @@ export function SpinWheelConfig({ value = [], onChange }) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Label className="text-base">Prêmios da Roleta</Label>
-        <Button type="button" size="sm" onClick={addPrize}>
-          <Plus className="h-4 w-4 mr-1" />
+    <div className="space-y-6">
+      {/* Textos do Modal */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Type className="h-5 w-5 text-primary" />
+          <Label className="text-base">Textos do Modal</Label>
+        </div>
+        
+        <div className="grid gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Título</Label>
+            <Input
+              id="title"
+              placeholder="Ex: Gire a Roleta"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="subtitle">Subtítulo</Label>
+            <Input
+              id="subtitle"
+              placeholder="Ex: Tente a sorte e ganhe prêmios!"
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="description">Descrição</Label>
+            <Input
+              id="description"
+              placeholder="Ex: Clique no botão abaixo para girar a roleta"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="spinButtonText">Texto do Botão Girar</Label>
+              <Input
+                id="spinButtonText"
+                placeholder="Ex: Girar Roleta"
+                value={spinButtonText}
+                onChange={(e) => setSpinButtonText(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="spinningText">Texto Durante o Giro</Label>
+              <Input
+                id="spinningText"
+                placeholder="Ex: Girando..."
+                value={spinningText}
+                onChange={(e) => setSpinningText(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="claimButtonText">Texto do Botão de Resgatar</Label>
+            <Input
+              id="claimButtonText"
+              placeholder="Ex: Resgatar Prêmio"
+              value={claimButtonText}
+              onChange={(e) => setClaimButtonText(e.target.value)}
+            />
+          </div>
+        </div>
+        
+        <p className="text-xs text-muted-foreground">
+          Configure os textos que serão exibidos no modal da roleta.
+        </p>
+      </div>
+
+      {/* Prêmios */}
+      <div className="space-y-4 pt-4 border-t border-border">
+        <div className="flex items-center justify-between">
+          <Label className="text-base">Prêmios da Roleta</Label>
+          <Button type="button" size="sm" onClick={addPrize}>
+            <Plus className="h-4 w-4 mr-1" />
           Adicionar Prêmio
         </Button>
       </div>
@@ -144,6 +236,7 @@ export function SpinWheelConfig({ value = [], onChange }) {
         <p className="text-xs text-muted-foreground">
           Selecione qual prêmio deve ser o resultado preferido da roleta. Deixe em "Nenhum" para sorteio aleatório.
         </p>
+      </div>
       </div>
     </div>
   );

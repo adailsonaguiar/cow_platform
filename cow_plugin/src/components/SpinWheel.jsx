@@ -31,11 +31,12 @@ export const SpinWheel = ({ gameProps, onComplete }) => {
 
     // Encontra o índice do item preferido
     let targetIndex = 0;
+    const preferredItem = gameProps?.preferredItem;
     
     if (preferredItem && preferredItem !== 'none' && preferredItem !== '') {
       // Se há um item preferido definido, procura por ele
       const preferredIndex = segments.findIndex(segment => 
-        segment.label === gameProps?.preferredItem
+        segment.label === preferredItem
       );
       targetIndex = preferredIndex !== -1 ? preferredIndex : 0;
     } else {
@@ -77,9 +78,9 @@ export const SpinWheel = ({ gameProps, onComplete }) => {
         <div className="dexx-spinwheel-header">
             <div className="dexx-spinwheel-badge">
               <span className="dexx-spinwheel-badge-icon">💎</span>
-              <span className="dexx-spinwheel-badge-text">{gameProps?.title ||'Roleta da Sorte'}</span>
+              <span className="dexx-spinwheel-badge-text">{gameProps?.subtitle ||'Roleta da Sorte'}</span>
             </div>
-            <h2 className="dexx-spinwheel-title">{gameProps?.subtitle || "Gire e Ganhe Prêmios Incríveis!"}</h2>
+            <h2 className="dexx-spinwheel-title">{gameProps?.title || "Gire e Ganhe Prêmios Incríveis!"}</h2>
             <p className="dexx-spinwheel-subtitle">{gameProps?.description || "✨ Sua sorte está a um clique de distância ✨"}</p>
           </div>
 

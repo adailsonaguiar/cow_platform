@@ -127,7 +127,7 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
       case 'spinwheel':
         return (
           <SpinWheelConfig
-            value={formData.blockConfig || []}
+            value={formData.data || []}
             onChange={handleBlockConfigChange}
           />
         );
