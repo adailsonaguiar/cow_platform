@@ -39,9 +39,7 @@ export default function PrizeSuccessScreen({ componentType, prize }) {
           {prize?.label || "Aguardando..."}
         </p>
       </div>
-      
-      <div className="dexx-prize-success-divider" />
-      
+            
       <div className="dexx-prize-success-message">
         <div className="dexx-prize-success-message-icon">🎁</div>
         <div className="dexx-prize-success-message-content">

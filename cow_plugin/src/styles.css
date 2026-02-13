@@ -1428,11 +1428,13 @@ button {
    ======================================== */
 
 .dexx-prize-success-container {
-  padding: var(--dexx-space-8) var(--dexx-space-6);
+  padding-top: var(--dexx-space-8);
+  padding-left: var(--dexx-space-6);
+  padding-right: var(--dexx-space-6);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--dexx-space-6);
+  gap: var(--dexx-space-3);
   position: relative;
   overflow: hidden;
   min-height: 500px;
@@ -1458,7 +1460,7 @@ button {
 }
 
 .dexx-prize-success-trophy {
-  font-size: 80px;
+  font-size: 40px;
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
   animation: dexx-prize-trophy-bounce 1s ease-out, dexx-prize-trophy-glow 2s ease-in-out infinite 1s;
   margin-bottom: var(--dexx-space-4);
