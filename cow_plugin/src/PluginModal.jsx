@@ -18,7 +18,6 @@ export default function PluginModal({ open, onClose }) {
   const [currentPrize, setCurrentPrize] = useState(null);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const prizeRef = useRef(null);
-
   const [gameProps, setGamesProps] = useState({});
 
   useEffect(() => {
@@ -65,9 +64,8 @@ export default function PluginModal({ open, onClose }) {
   }
 
   function handleFormSubmit() {
-    console.log("📋 Formulário enviado");
     setCompleted(true);
-    setIsLoadingReward(true);
+    setTimeout(() => showRewardedLink(), 1000);
   }
 
   function handleLoadingComplete() {
@@ -101,16 +99,17 @@ export default function PluginModal({ open, onClose }) {
   }
 
   function handleMysteryBoxComplete(prize) {
-    console.log("🎁 Caixa surpresa completada:", prize);
     setCompleted(true);
     setCurrentPrize(prize);
     // Inicia loading ao finalizar caixa surpresa
-    setIsLoadingReward(true);
+    //setIsLoadingReward(true);
     window.dispatchEvent(
       new CustomEvent("dexxPluginResponse", {
         detail: { type: "mysterybox", prize },
       }),
     );
+
+    setTimeout(() => showRewardedLink(), 1000);
   }
 
   function showRewardedLink() {
