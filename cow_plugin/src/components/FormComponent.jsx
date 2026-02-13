@@ -5,6 +5,8 @@ export default function FormComponent({ gameProps, onComplete }) {
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState({});
 
+  console.log({gameProps})
+
   // Se não há perguntas, retorna null
   if (questions.length === 0) {
     return null;
@@ -48,7 +50,7 @@ export default function FormComponent({ gameProps, onComplete }) {
       
       {/* Question Content */}
       <div className="dexx-question-content">
-        <h2 className="dexx-form-title">{currentQuestion.title || 'Responda para participar'}</h2>
+        <h2 className="dexx-form-title">{gameProps.title || 'Responda para participar'}</h2>
         <p className="dexx-form-question">{currentQuestion.question}</p>
       </div>
       

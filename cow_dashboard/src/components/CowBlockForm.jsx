@@ -134,7 +134,7 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
       case 'quiz':
         return (
           <QuizConfig
-            value={formData.blockConfig || []}
+            value={formData.data || []}
             onChange={handleBlockConfigChange}
           />
         );

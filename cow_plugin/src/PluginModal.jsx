@@ -146,6 +146,8 @@ export default function PluginModal({ open, onClose }) {
 
   if(loading) return <></>
 
+  console.log({componentType})
+
   const content = isLoadingReward ? (
     <LoadingComponent onComplete={handleLoadingComplete} />
   ) : quizCompleted && !completed && componentType === "quiz" ? (
