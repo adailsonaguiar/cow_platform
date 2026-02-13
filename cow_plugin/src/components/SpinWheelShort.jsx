@@ -80,6 +80,13 @@ export const SpinWheelShort = ({ gameProps, onComplete }) => {
       localStorage.setItem("dexx_once", "1");
     } catch (_) {}
 
+    // Adiciona utm_modal na URL
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('utm_modal', 'spinwheel-short');
+      window.history.replaceState({}, '', url.toString());
+    } catch (_) {}
+
     // Notifica o componente pai
     if (onComplete && winner) {
       const winningPrize = segments[winnerIndex];
