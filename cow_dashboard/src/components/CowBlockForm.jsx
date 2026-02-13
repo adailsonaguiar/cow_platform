@@ -64,6 +64,7 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
   const getInitialBlockConfig = (type, data) => {
     switch (type) {
       case 'spinwheel':
+      case 'spinwheel-short':
         return {
           prizes: data?.prizes || [],
           preferredItem: data?.preferredItem || ''
@@ -125,6 +126,7 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
   const renderBlockConfiguration = () => {
     switch (formData.type) {
       case 'spinwheel':
+      case 'spinwheel-short':
         return (
           <SpinWheelConfig
             value={formData.data || []}

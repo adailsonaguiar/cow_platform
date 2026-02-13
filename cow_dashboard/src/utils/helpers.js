@@ -7,6 +7,7 @@ export function cn(...inputs) {
 export const BLOCK_TYPES = [
   { value: 'quiz', label: 'Quiz', icon: '❓', description: 'Interactive quiz format' },
   { value: 'spinwheel', label: 'Spin Wheel', icon: '🎡', description: 'Spin to win rewards' },
+  { value: 'spinwheel-short', label: 'Spin Wheel Short', icon: '🎯', description: 'Roleta rápida sem loading' },
   { value: 'mysterybox', label: 'Caixa Surpresa', icon: '📦', description: 'Escolha uma caixa e ganhe prêmios' },
 ];
 
