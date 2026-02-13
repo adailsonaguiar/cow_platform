@@ -29,8 +29,10 @@ export class CowRepository {
   }
 
   async findBySiteUrl(siteUrl: string): Promise<Cow | null> {
+    // Remove query params e hash da URL
+    let normalizedUrl = siteUrl.split('?')[0].split('#')[0];
     // Remove barra final se existir para normalizar a URL de busca
-    const normalizedUrl = siteUrl.replace(/\/+$/, '');
+    normalizedUrl = normalizedUrl.replace(/\/+$/, '');
     // Escapa caracteres especiais da URL para uso em regex
     const escapedUrl = normalizedUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     // Busca URLs que correspondam com ou sem barra final
