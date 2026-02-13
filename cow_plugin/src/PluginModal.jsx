@@ -195,7 +195,7 @@ export default function PluginModal({ open, onClose }) {
       <div className="dexx-modal-content-wrapper">
         <div className="dexx-modal-content">
           <div className="dexx-modal-dynamic-content">{content}</div>
-          {completed && (
+          {completed && componentType !== "spinwheel-short" && (
             <div id="dexx-rewarded-container" ref={prizeRef} className="hidden">
               <a
                 href="#"

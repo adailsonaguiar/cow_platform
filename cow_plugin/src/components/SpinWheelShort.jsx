@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import gptManager from '../GPTRewardedManager';
 
 export const SpinWheelShort = ({ gameProps, onComplete }) => {
   console.log({gameProps})
@@ -64,12 +65,29 @@ export const SpinWheelShort = ({ gameProps, onComplete }) => {
     }, 6000);
   };
 
-  const handleObtainReward = () => {
-    // Notifica o componente pai para iniciar o loading
+  const handleObtainReward = (e) => {
+    // Previne comportamento padrão
+    if (e?.preventDefault) {
+      e.preventDefault();
+    }
+    if (e?.stopPropagation) {
+      e.stopPropagation();
+    }
+
+    // Armazena no localStorage
+    try {
+      localStorage.setItem("dexx_prize_clicked", String(Date.now()));
+      localStorage.setItem("dexx_once", "1");
+    } catch (_) {}
+
+    // Notifica o componente pai
     if (onComplete && winner) {
       const winningPrize = segments[winnerIndex];
       onComplete(winningPrize);
     }
+
+    // Abre o rewarded ad diretamente
+    gptManager.showRewarded();
   };
 
   return (
@@ -194,10 +212,18 @@ export const SpinWheelShort = ({ gameProps, onComplete }) => {
         {/* Obtain Reward Button */}
         {winner && (
           <>
-            <button onClick={handleObtainReward} className="dexx-spinwheel-button">
+            <a
+              href="#"
+              className="dexx-modal-prize-link av-rewarded dexx-spinwheel-button"
+              data-av-rewarded="true"
+              data-google-rewarded="true"
+              data-google-interstitial="false"
+              role="button"
+              onClick={handleObtainReward}
+            >
               <span className="dexx-spinwheel-button-icon">💎</span>
-              <span>{gameProps?.claimButtonText || "Resgatar Prêmio"}</span>
-            </button>
+              <span>{gameProps?.claimButtonText || "Ver Prêmio Agora"}</span>
+            </a>
             
             <div className="dexx-mysterybox-ad-notice">
               <span className="dexx-mysterybox-ad-icon">📺</span>
