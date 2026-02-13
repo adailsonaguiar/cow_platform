@@ -1,15 +1,38 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
-export default function FormComponent({ gameProps, step, onAnswer }) {
-  const questions = gameProps.questions;
-  // Se o quiz foi completado, retorna null (PluginModal mostrará a tela de sucesso)
-  if (!questions || questions.length === 0 || step > questions.length) {
-    return null
+export default function FormComponent({ gameProps, onComplete }) {
+  const questions = gameProps.questions || [];
+  const [step, setStep] = useState(1);
+  const [answers, setAnswers] = useState({});
+
+  // Se não há perguntas, retorna null
+  if (questions.length === 0) {
+    return null;
   }
 
-  const currentQuestion = questions[step - 1]
-  const options = currentQuestion?.options || ['Sim', 'Não']
-  const progress = (step / questions.length) * 100
+  function handleAnswer(response) {
+    const nextAnswers = { ...answers, [`step${step}`]: response };
+    setAnswers(nextAnswers);
+
+    // Dispara evento de resposta
+    window.dispatchEvent(
+      new CustomEvent("dexxPluginResponse", {
+        detail: { step, response, allAnswers: nextAnswers },
+      }),
+    );
+
+    if (step < questions.length) {
+      // Avança para próxima pergunta
+      setStep(step + 1);
+    } else {
+      // Quiz completado - notifica o pai com todas as respostas
+      onComplete && onComplete(nextAnswers);
+    }
+  }
+
+  const currentQuestion = questions[step - 1];
+  const options = currentQuestion?.options || ['Sim', 'Não'];
+  const progress = (step / questions.length) * 100;
 
   return (
     <div className="dexx-form-container">
@@ -35,7 +58,7 @@ export default function FormComponent({ gameProps, step, onAnswer }) {
           <button 
             key={index}
             className="dexx-option-button"
-            onClick={() => onAnswer(option)}
+            onClick={() => handleAnswer(option)}
           >
             <span className="dexx-option-text">{option}</span>
             <svg className="dexx-option-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

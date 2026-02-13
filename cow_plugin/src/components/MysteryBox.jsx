@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
-export const MysteryBox = ({ gameProps, onComplete }) => {
+export const MysteryBox = ({ gameProps, onComplete }) => {console.log({gameProps})
+
   const [selectedBox, setSelectedBox] = useState(null);
   const [isRevealing, setIsRevealing] = useState(false);
   const [winner, setWinner] = useState(null);
@@ -60,9 +61,9 @@ export const MysteryBox = ({ gameProps, onComplete }) => {
       <div className="dexx-mysterybox-header">
         <div className="dexx-mysterybox-badge">
           <span className="dexx-mysterybox-badge-icon">🎁</span>
-          <span className="dexx-mysterybox-badge-text">{gameProps?.title || 'Caixa Surpresa'}</span>
+          <span className="dexx-mysterybox-badge-text">{gameProps?.subtitle || 'Caixa Surpresa'}</span>
         </div>
-        <h2 className="dexx-mysterybox-title">{gameProps?.subtitle || 'Escolha Sua Caixa da Sorte!'}</h2>
+        <h2 className="dexx-mysterybox-title">{gameProps?.title || 'Escolha Sua Caixa da Sorte!'}</h2>
         <p className="dexx-mysterybox-subtitle">{gameProps?.description || '✨ Uma delas esconde um prêmio especial ✨'}</p>
       </div>
 

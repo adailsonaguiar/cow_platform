@@ -88,43 +88,17 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    console.log({formData})
     
-    // Montar o objeto data baseado no tipo de bloco
-    let blockData = {
-      language: formData.language,
-    };
-
-    switch (formData.type) {
-      case 'spinwheel':
-        blockData.prizes = formData.blockConfig?.prizes || [];
-        blockData.preferredItem = formData.blockConfig?.preferredItem || '';
-        break;
-      case 'quiz':
-        blockData.questions = formData.blockConfig || [];
-        break;
-      case 'scratch':
-        blockData.prizes = formData.blockConfig || [];
-        break;
-      case 'countdown':
-        blockData = { ...blockData, ...formData.blockConfig };
-        break;
-      case 'gift':
-        blockData = { ...blockData, ...formData.blockConfig };
-        break;
-      case 'mysterybox':
-        blockData.prizes = formData.blockConfig?.prizes || [];
-        blockData.preferredItem = formData.blockConfig?.preferredItem || '';
-        break;
-      default:
-        blockData = { ...formData.data, language: formData.language };
-    }
-
     const submitData = {
       blockName: formData.blockName,
       sites: formData.sites,
       type: formData.type,
       active: formData.active,
-      data: blockData,
+      data: {
+        ...formData.data
+      },
     };
     
     onSubmit(submitData);
@@ -144,7 +118,7 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
   const handleBlockConfigChange = (config) => {
     setFormData((prev) => ({
       ...prev,
-      blockConfig: config,
+      data: config,
     }));
   };
 
@@ -188,7 +162,7 @@ export function CowBlockForm({ open, onOpenChange, onSubmit, initialData, mode =
       case 'mysterybox':
         return (
           <MysteryBoxConfig
-            value={formData.blockConfig || {}}
+            value={formData.data || {}}
             onChange={handleBlockConfigChange}
           />
         );

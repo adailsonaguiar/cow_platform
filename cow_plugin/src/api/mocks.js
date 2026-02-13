@@ -95,7 +95,7 @@ export const MYSTERYBOX_SETS = [
  */
 export function getMockConfig(type = null, scenarioIndex = null) {
   // Se tipo não for especificado, escolhe aleatoriamente
-  const componentType = type || COMPONENT_TYPES[2];
+  const componentType = type || COMPONENT_TYPES[0];
 
   let config = {
     type: componentType,

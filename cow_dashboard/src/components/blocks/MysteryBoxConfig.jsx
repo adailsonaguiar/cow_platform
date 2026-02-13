@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Input, Label } from '@/components/ui/Input';
+import { Input, Label, Textarea } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
-import { Plus, Trash2, GripVertical, Target, Gift } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Target, Gift, Type } from 'lucide-react';
 
 export function MysteryBoxConfig({ value = {}, onChange }) {
   // Check if value is an object with prizes or just an array (backwards compatibility)
@@ -15,13 +15,23 @@ export function MysteryBoxConfig({ value = {}, onChange }) {
     { id: 1, label: '' }
   ]);
   const [preferredItem, setPreferredItem] = useState(initialPreferredItem);
+  
+  // Campos de texto do modal
+  const [title, setTitle] = useState(value.title || '');
+  const [subtitle, setSubtitle] = useState(value.subtitle || '');
+  const [description, setDescription] = useState(value.description || '');
+  const [claimButtonText, setClaimButtonText] = useState(value.claimButtonText || '');
 
   useEffect(() => {
     onChange({
       prizes,
-      preferredItem
+      preferredItem,
+      title,
+      subtitle,
+      description,
+      claimButtonText
     });
-  }, [prizes, preferredItem]);
+  }, [prizes, preferredItem, title, subtitle, description, claimButtonText]);
 
   const addPrize = () => {
     const newId = prizes.length > 0 ? Math.max(...prizes.map(p => p.id)) + 1 : 1;
@@ -56,17 +66,73 @@ export function MysteryBoxConfig({ value = {}, onChange }) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      {/* Textos do Modal */}
+      <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Gift className="h-5 w-5 text-primary" />
-          <Label className="text-base">Prêmios da Caixa Surpresa</Label>
+          <Type className="h-5 w-5 text-primary" />
+          <Label className="text-base">Textos do Modal</Label>
         </div>
-        <Button type="button" size="sm" onClick={addPrize}>
-          <Plus className="h-4 w-4 mr-1" />
-          Adicionar Prêmio
-        </Button>
+        
+        <div className="grid gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Título</Label>
+            <Input
+              id="title"
+              placeholder="Ex: Caixa Surpresa"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="subtitle">Subtítulo</Label>
+            <Input
+              id="subtitle"
+              placeholder="Ex: Escolha uma caixa e ganhe um prêmio!"
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="description">Descrição</Label>
+            <Input
+              id="description"
+              placeholder="Ex: Clique em uma das caixas abaixo para revelar seu prêmio"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="claimButtonText">Texto do Botão de Resgatar</Label>
+            <Input
+              id="claimButtonText"
+              placeholder="Ex: Resgatar Prêmio"
+              value={claimButtonText}
+              onChange={(e) => setClaimButtonText(e.target.value)}
+            />
+          </div>
+        </div>
+        
+        <p className="text-xs text-muted-foreground">
+          Configure os textos que serão exibidos no modal da caixa surpresa.
+        </p>
       </div>
+
+      {/* Prêmios */}
+      <div className="space-y-4 pt-4 border-t border-border">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Gift className="h-5 w-5 text-primary" />
+            <Label className="text-base">Prêmios da Caixa Surpresa</Label>
+          </div>
+          <Button type="button" size="sm" onClick={addPrize}>
+            <Plus className="h-4 w-4 mr-1" />
+            Adicionar Prêmio
+          </Button>
+        </div>
 
       <div className="space-y-3">
         {prizes.map((prize, index) => (
@@ -160,6 +226,7 @@ export function MysteryBoxConfig({ value = {}, onChange }) {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

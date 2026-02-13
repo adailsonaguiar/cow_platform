@@ -11,9 +11,6 @@ import LoadingComponent from "./components/LoadingComponent";
 export default function PluginModal({ open, onClose }) {
   const [visible, setVisible] = useState(open);
   const [componentType, setComponentType] = useState(null);
-  const [step, setStep] = useState(1);
-  const [answers, setAnswers] = useState({});
-  const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
   const [isLoadingReward, setIsLoadingReward] = useState(false);
@@ -29,14 +26,10 @@ export default function PluginModal({ open, onClose }) {
     }
     setVisible(open);
     if (open) {
-      setStep(1);
-      setAnswers({});
       setLoading(true);
       setCompleted(false);
       setQuizCompleted(false);
       setComponentType(null);
-      setQuestions([]);
-      // setPrizes([]);
       // Bloquear scroll da página
       // document.body.style.overflow = "hidden";
 
@@ -66,33 +59,14 @@ export default function PluginModal({ open, onClose }) {
     }
   }, [open]);
 
-  function dispatchResponse(response) {
-    const next = { ...answers, [`step${step}`]: response };
-    setAnswers(next);
-
-    window.dispatchEvent(
-      new CustomEvent("dexxPluginResponse", {
-        detail: { step, response, allAnswers: next },
-      }),
-    );
-
-    if (step < questions.length) {
-      setStep(step + 1);
-    } else {
-      setStep(step + 1);
-      setQuizCompleted(true);
-    }
+  function handleQuizComplete(answers) {
+    setQuizCompleted(true);
   }
 
   function handleFormSubmit() {
     console.log("📋 Formulário enviado");
     setCompleted(true);
     setIsLoadingReward(true);
-    window.dispatchEvent(
-      new CustomEvent("dexxPluginResponse", {
-        detail: { type: "quiz", answers },
-      }),
-    );
   }
 
   function handleLoadingComplete() {
@@ -157,17 +131,6 @@ export default function PluginModal({ open, onClose }) {
       localStorage.setItem("dexx_once", "1");
     } catch (_) {}
 
-    // Dispara evento customizado (igual plugin-funcional.js linha ~389)
-    window.dispatchEvent(
-      new CustomEvent("dexxPrizeClick", {
-        detail: {
-          componentType,
-          answers,
-          timestamp: new Date().toISOString(),
-        },
-      }),
-    );
-
     gptManager.showRewarded();
 
     return false;
@@ -194,8 +157,7 @@ export default function PluginModal({ open, onClose }) {
   ) : componentType === "quiz" ? (
     <FormComponent
       gameProps={gameProps}
-      step={step}
-      onAnswer={dispatchResponse}
+      onComplete={handleQuizComplete}
     />
   ) : componentType === "spinwheel" ? (
     <SpinWheel

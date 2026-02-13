@@ -27,48 +27,8 @@ function parseApiResponse(apiData) {
 
   let config = {
     type: componentType,
+    ...pluginData
   };
-
-  console.log("🔍 Processando dados para o tipo:", componentType, pluginData);
-  
-  if (componentType === "quiz" && pluginData.questions) {
-    config.questions = pluginData.questions;
-    console.log(
-      `📋 API: Retornando FORMULÁRIO com ${config.questions.length} pergunta(s)`,
-    );
-  } else if (componentType === "spinwheel" && pluginData.prizes) {
-    config.prizes = pluginData.prizes;
-    config.preferredItem = pluginData.preferredItem || '';
-    console.log(
-      `🎡 API: Retornando ROLETA com ${config.prizes.length} prêmios`,
-    );
-  } else if (componentType === "mysterybox" && (pluginData.prizes || pluginData.prize)) {
-    // Suporta dois formatos:
-    // 1. Novo: pluginData.prizes = array com { id, label }
-    // 2. Antigo: pluginData.prize = string com o prêmio único
-    // A quantidade de caixinhas = quantidade de prêmios
-    
-    if (pluginData.prizes && Array.isArray(pluginData.prizes)) {
-      // Formato novo com array de prêmios (do MysteryBoxConfig)
-      config.prizes = pluginData.prizes;
-      config.preferredItem = pluginData.preferredItem || '';
-    } else if (pluginData.prize) {
-      // Formato antigo com prêmio único (compatibilidade com "gift" type)
-      config.prizes = [
-        {
-          id: 1,
-          label: pluginData.prize,
-        }
-      ];
-      config.preferredItem = pluginData.prize; // Sempre o prêmio único
-    }
-    
-  } else {
-    console.warn(
-      "⚠️ Tipo de componente não reconhecido ou dados faltando, usando fallback",
-    );
-    return getMockConfig();
-  }
 
   return config;
 }
