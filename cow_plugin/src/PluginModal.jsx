@@ -7,6 +7,7 @@ import gptManager from "./GPTRewardedManager";
 import { SpinWheel } from "./components/SpinWheel";
 import { MysteryBox } from "./components/MysteryBox";
 import LoadingComponent from "./components/LoadingComponent";
+import { SpinWheelShort } from "./components/SpinWheelShort";
 
 export default function PluginModal({ open, onClose }) {
   const [visible, setVisible] = useState(open);
@@ -76,7 +77,6 @@ export default function PluginModal({ open, onClose }) {
   }
 
   function handleRouletteComplete(prize) {
-    console.log("🎡 Roleta completada:", prize);
     setCompleted(true);
     setCurrentPrize(prize);
     // Inicia loading ao finalizar roleta
@@ -84,6 +84,18 @@ export default function PluginModal({ open, onClose }) {
     window.dispatchEvent(
       new CustomEvent("dexxPluginResponse", {
         detail: { type: "roulette", prize },
+      }),
+    );
+  }
+
+  function handleRouletteShortComplete(prize) {
+    setCompleted(true);
+    setCurrentPrize(prize);
+    // Não mostra loading, vai direto para o botão de prêmio
+    setTimeout(() => showRewardedLink(), 400);
+    window.dispatchEvent(
+      new CustomEvent("dexxPluginResponse", {
+        detail: { type: "roulette-short", prize },
       }),
     );
   }
@@ -164,6 +176,11 @@ export default function PluginModal({ open, onClose }) {
   ) : componentType === "spinwheel" ? (
     <SpinWheel
       onComplete={handleRouletteComplete}
+      gameProps={gameProps}
+    />
+  ) : componentType === "spinwheel-short" ? (
+    <SpinWheelShort
+      onComplete={handleRouletteShortComplete}
       gameProps={gameProps}
     />
   ) : componentType === "mysterybox" ? (

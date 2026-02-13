@@ -15,8 +15,7 @@ export {
 // Funções de requisição
 export { 
   fetchPluginConfig, 
-  fetchPluginConfigByType, 
-  fetchQuestions 
+  fetchPluginConfigByType
 } from './pluginApi';
 
 // Dados de mock

@@ -41,8 +41,8 @@ function parseApiResponse(apiData) {
 export async function fetchPluginConfig() {
   // Se estiver em modo mock, usa dados locais
   if (apiConfig.useMock) {
-    return getMockConfig();
-  }
+      return getMockConfig();
+    }
 
   const currentUrl = window.location.href;
   const site = window.location.hostname;
@@ -113,16 +113,4 @@ export async function fetchPluginConfigByType(type = "quiz", scenarioIndex = 0) 
     console.warn("⚠️ Erro ao buscar por tipo, usando mock:", error.message);
     return getMockConfig(type, scenarioIndex);
   }
-}
-
-/**
- * Busca apenas perguntas (compatibilidade com código legado)
- * @returns {Promise<Array>} Lista de perguntas
- */
-export async function fetchQuestions() {
-  const pluginConfig = await fetchPluginConfig();
-  if (pluginConfig.type === "quiz" && pluginConfig.questions) {
-    return pluginConfig.questions;
-  }
-  return QUESTION_SETS[0];
 }
